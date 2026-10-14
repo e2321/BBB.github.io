@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {readOnlineResponse} from '../online-http.js';
+const context={url:'https://fixture.invalid/health',origin:'https://e2321.github.io',method:'GET'};
+test('health HTTP 200 JSON is returned unchanged',async()=>{assert.deepEqual(await readOnlineResponse(new Response('{"ok":true,"version":1}',{headers:{'Content-Type':'application/json','X-BBB-Service':'bbb-friends-server'}}),context),{ok:true,version:1});});
+test('application 403 carries status, origin rejection and service marker without hiding the reason',async()=>{await assert.rejects(readOnlineResponse(new Response('{"error":"許可されていない接続元です"}',{status:403,headers:{'X-BBB-Service':'bbb-friends-server','X-BBB-Error':'ORIGIN_NOT_ALLOWED'}}),context),error=>{assert.match(error.message,/HTTP 403.*ゲームサーバー/);assert.equal(error.diagnostic.status,403);assert.equal(error.diagnostic.code,'ORIGIN_NOT_ALLOWED');assert.equal(error.diagnostic.origin,context.origin);return true;});});
+test('upstream HTML 403 is reported as unconfirmed source rather than a JSON syntax error',async()=>{await assert.rejects(readOnlineResponse(new Response('<h1>Forbidden</h1>',{status:403,headers:{'Content-Type':'text/html'}}),context),error=>{assert.match(error.message,/HTTP 403.*発生元未確認/);assert.equal(error.diagnostic.service,null);return true;});});
+test('a 200 HTML wake-up page does not look like a healthy JSON server',async()=>{await assert.rejects(readOnlineResponse(new Response('<html>Loading</html>'),context),/JSONではない応答/);});
