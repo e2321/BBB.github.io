@@ -16,6 +16,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      VITE_ONLINE_SERVER_URL: ${{ vars.VITE_ONLINE_SERVER_URL }}
     steps:
       - name: Check out the same development source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -28,9 +30,9 @@ jobs:
         run: npm ci
       - name: Check game rules and protected models
         run: npm test
+      - name: Validate the production WSS endpoint
+        run: node tools/check-online-config.mjs
       - name: Build and check the static submission
-        env:
-          VITE_ONLINE_SERVER_URL: ${{ vars.VITE_ONLINE_SERVER_URL }}
         run: npm run prepare:submission
       - name: Upload only the production files
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5

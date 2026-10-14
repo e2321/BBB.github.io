@@ -4,7 +4,9 @@
 
 ## 現在の検証状況
 
-サーバーのゲーム・ロビールールは依存ライブラリなしの単体テストで検証しています。この作業環境では npm レジストリへのアクセスが EACCES で拒否されたため、Colyseus のインストール、実サーバー起動、実 WebSocket 接続、複数ブラウザー通信、再接続トークンの実通信は未検証です。オンライン対戦が完成・公開済みという扱いにはしていません。公開前に下記の接続テストを実施してください。
+Colyseusは導入済みです。ローカルの実サーバーを使う統合テストで、HTTP/SDK配信、4クライアント参加、カウントダウン、不正入力拒否、ジャンプのBP・水分、再接続が成功しました。別PC・公開HTTPS/WSS・複数ブラウザー間の実通信は未確認です。オンライン対戦が完成・公開済みという扱いにはしていません。
+
+**友達がゲームURLとコードだけで参加できる公開構成は、[初心者向け公開手順](server/DEPLOYMENT.md)を参照してください。** `render.yaml` は既存のサーバーをRenderへ公開するための設定です。公開者が一度WSS接続先をGitHubのVariablesに設定すると、友達側の環境変数設定は不要です。
 
 ## ローカル起動
 
@@ -55,7 +57,7 @@ SDK は設定されたオンラインサーバーの `/sdk/colyseus.js` から�
 ## オンラインサーバー公開
 
 - Node.js と WebSocket 常時接続に対応したホストを用意し、このプロジェクトのソースも含めて配置します。サーバーはルートの共通ゲーム判定を参照するため、`server/` 単体だけをコピーしないでください。
-- 初回は `npm --prefix server install`、起動は `npm --prefix server start`。インストール成功後の `server/package-lock.json` を保存し、以降は `npm --prefix server ci` で固定してください。この環境ではロックファイルを生成できていません。
+- `server/package-lock.json` は導入済みです。公開時は `npm ci --prefix server --omit=dev`、起動は `npm --prefix server start` を使います。
 - `PORT` をホスト指定値、`ALLOWED_ORIGINS` を `https://e2321.github.io` に設定します。開発用接続元を併記する場合はカンマ区切りにします。
 - HTTPS/WSS と WebSocket の Upgrade 転送を有効にし、`/health`、`/rooms`、`/sdk/colyseus.js`、Colyseus `/matchmake` と WebSocket 経路を同じドメインで公開します。
 - 現実装は単一プロセス・単一インスタンスです。ルーム管理をメモリに保持するため複数インスタンスへの無設定の分散配信はできません。サーバー再起動では試合が終了します。

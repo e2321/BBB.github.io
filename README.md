@@ -2,6 +2,8 @@
 
 ブラウザーで遊べるThree.js製のWebゲームです。**プロローグ（短いチュートリアル）**と**BBB（ビタンビタンバトル）**を同じアプリに収録しています。BBBはノーマルと厨房の2ステージです。
 
+オンライン友達対戦を外部公開するための設定は `render.yaml`、公開者向けの具体的な手順は [server/DEPLOYMENT.md](server/DEPLOYMENT.md) にあります。友達側は公開ゲームURLとルームコードだけで参加する構成です。外部サーバーの公開・別PCからの動作確認は未完了です。
+
 **提出・公開手順は [PUBLISHING.md](PUBLISHING.md)。** 既存の公開URLは https://e2321.github.io/BBB.github.io/ です。今回の追加変更のpush・デプロイは行っていません。GitHub Actionsはmainへのpushで自動公開し、手動実行も可能です。
 
 ## 開発と提出用ビルド

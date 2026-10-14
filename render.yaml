@@ -1,0 +1,20 @@
+# Deploy the server from the repository root; it imports shared game modules.
+# This file creates nothing until the owner applies it in Render.
+services:
+  - type: web
+    name: bbb-friends-server
+    runtime: node
+    region: singapore
+    plan: free
+    numInstances: 1
+    autoDeployTrigger: "off"
+    buildCommand: npm ci --prefix server --omit=dev && npm --prefix server test && npm --prefix server run test:integration
+    startCommand: npm --prefix server start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "24.21.0"
+      - key: NODE_ENV
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: https://e2321.github.io
