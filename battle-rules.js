@@ -1,6 +1,6 @@
 // Height and horizontal travel are independently tunable; frequency preserves the apex.
 export const BATTLE={duration:90,size:30,players:4,hp:4,fishLength:1.5,bodyRadius:.27,bodyHalfLength:.46,bodyY:.28,jumpDuration:.5,jumpHeight:1.26,spaceJumpHeight:1.26,jumpDistance:1.2,jumpSpeed:8.4,gravity:33.6,walkSpeed:2.4,buffer:.4,fireInterval:.6,knifeSpeed:14,knifeRadius:.065,respawn:5,invincible:1};
-export const FLOP_RULES={landingPoints:10,jumpWaterCost:1,spaceWaterCost:2,lowWaterThreshold:10,lowWaterPenalty:10,comboWindow:1.5,absorbRate:.10,waterRecovery:10,minStrength:.60,maxAcceleration:1,accelerationDecay:.55,maxFrequencyMultiplier:2.1,inputMinInterval:.06,swimSpeed:3.2,waterHysteresis:.07};
+export const FLOP_RULES={landingPoints:10,jumpWaterCost:1,spaceWaterCost:2,lowWaterThreshold:10,lowWaterPenalty:10,comboWindow:1.5,absorbRate:.05,waterRecovery:10,minStrength:.60,maxAcceleration:1,accelerationDecay:.55,maxFrequencyMultiplier:2.1,inputMinInterval:.06,swimSpeed:3.2,waterHysteresis:.07};
 export const ACCENTS=['#658fb1','#b16b64','#7f9c73','#b8a270'];
 export const PUDDLES=[{x:-12,z:-4,radius:1.55},{x:12,z:4,radius:1.55},{x:5.5,z:13,radius:1.55}];
 export const JUMP_STRENGTH_CURVE=[[0,.60],[10,.75],[20,.85],[30,.90],[50,.95],[75,.98],[100,1]];
@@ -40,3 +40,5 @@ export const FEIGN_RULES={idle:.8,noticeDistance:5,approachTimeout:6,inspectDist
 export const CHEF_RULES={noticeDistance:7,chaseDistance:10,patrolSpeed:.7,chaseSpeed:1.35,attackDistance:1.55,attackHeight:.85,windup:.75,commitTime:.35,attackCooldown:3.2,hitGrace:.8,thinkInterval:.35};
 export const KITCHEN_BOT_RULES={leaderTargetChance:.28,escapeDistance:3.5};
 export const COUNTDOWN_RULES={duration:3,flopPeriod:.42,flopHeight:.18,botPeriod:.7,startDisplay:.65};
+
+export const HEART_RULES={heal:1,respawn:15,radius:.75,heightTolerance:.7};

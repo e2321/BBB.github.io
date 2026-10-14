@@ -25,5 +25,5 @@ export class Session{
  connection(id,connected){const m=this.members.get(id);if(!m)return;m.connected=connected;if(this.phase==='MATCH')this.sim.players[m.slot].bot=!connected;if(!connected&&this.phase==='LOBBY'){m.ready=false;if(this.host===id)this.host=[...this.members.values()].find(q=>q.connected)?.id||id;}}
  step(){if(this.phase!=='MATCH')return;this.sim.step(1/60);this.tick++;}
  lobby(){return {code:this.code,host:this.host,phase:this.phase,players:[...this.members.values()].map(({id,name,slot,ready,connected})=>({id,name,slot,ready,connected}))};}
- snapshot(){const s=this.sim;return {tick:this.tick,serverTime:Date.now(),state:s.state,time:s.time,countdownElapsed:s.countdownElapsed,countdownValue:s.countdownValue,players:s.players.map(p=>({...p,ai:undefined,buffer:undefined,surpriseWindows:undefined})),projectiles:s.projectiles.filter(k=>k.active),boosts:s.boosts,sashimi:s.sashimi,result:s.result,events:s.events.splice(0)};}
+ snapshot(){const s=this.sim;return {tick:this.tick,serverTime:Date.now(),state:s.state,time:s.time,countdownElapsed:s.countdownElapsed,countdownValue:s.countdownValue,players:s.players.map(p=>({...p,ai:undefined,buffer:undefined,surpriseWindows:undefined})),projectiles:s.projectiles.filter(k=>k.active),boosts:s.boosts,hearts:s.hearts,sashimi:s.sashimi,result:s.result,events:s.events.splice(0)};}
 }

@@ -5,7 +5,7 @@ const boosts=positions=>positions.map(([x,z],id)=>({id,p:{x,y:.35,z}}));
 export const KITCHEN_OBSTACLES=[fixture('counter-west','counter',-9,-5,2.4,5,1.5),fixture('counter-east','counter',9,5,2.4,5,1.5),fixture('shelf-north','shelf',2,-10,5,1.4,2.4),fixture('sink-west','sink',-8,9,4,2,1.3),fixture('prep-center','counter',0,0,3,1.8,.4)];
 export const BATTLE_STAGES={
  tutorial:TUTORIAL_STAGE,
- normal:{id:'normal',name:'ノーマル',playable:true,obstacles:ARENA_OBSTACLES,walls:ARENA_WALLS,puddles:PUDDLES,spawns:SPAWNS,ceiling:Infinity,boosts:boosts([[-2,-6],[8,0],[-3,5]]),chefs:[]},
- kitchen:{id:'kitchen',name:'厨房',playable:true,obstacles:KITCHEN_OBSTACLES,walls:ARENA_WALLS,puddles:PUDDLES,spawns:SPAWNS,ceiling:4.1,boosts:boosts([[-3,-6],[5,2],[-3,5]]),chefs:[{id:0,x:-9,z:0,patrol:[[-10,0],[-10,-10],[-3,-10],[-3,2]]},{id:1,x:9,z:0,patrol:[[10,0],[10,10],[6,10],[6,0]]}]},
+ normal:{id:'normal',name:'ノーマル',playable:true,obstacles:ARENA_OBSTACLES,walls:ARENA_WALLS,puddles:PUDDLES,spawns:SPAWNS,ceiling:Infinity,hearts:boosts([[-4,-3],[4,3]]),boosts:boosts([[-2,-6],[8,0],[-3,5]]),chefs:[]},
+ kitchen:{id:'kitchen',name:'厨房',playable:true,obstacles:KITCHEN_OBSTACLES,walls:ARENA_WALLS,puddles:PUDDLES,spawns:SPAWNS,ceiling:4.1,hearts:boosts([[-4,0],[4,-4]]),boosts:boosts([[-3,-6],[5,2],[-3,5]]),chefs:[{id:0,x:-9,z:0,patrol:[[-10,0],[-10,-10],[-3,-10],[-3,2]]},{id:1,x:9,z:0,patrol:[[10,0],[10,10],[6,10],[6,0]]}]},
 };
 export function battleStage(id='normal'){const stage=BATTLE_STAGES[id];if(!stage?.playable)throw new Error('このステージは選択できません。');return stage;}
