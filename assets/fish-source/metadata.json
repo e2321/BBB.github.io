@@ -1,0 +1,31 @@
+{
+  "length_m": 0.45499999999999996,
+  "body_sections": 180,
+  "circumference_segments": 112,
+  "texture_resolution": [
+    4096,
+    2048
+  ],
+  "bones": [
+    "root",
+    "head",
+    "spine_front",
+    "spine_rear",
+    "tail_base",
+    "tail_tip",
+    "jaw"
+  ],
+  "animations": [
+    "TailBeat_A",
+    "TailBeat_D",
+    "Airborne",
+    "FeignDeath",
+    "Landing",
+    "Captured",
+    "Dry"
+  ],
+  "vertices": 65299,
+  "triangles": 128138,
+  "blender": "5.2.2 LTS",
+  "glb_bytes": 44380732
+}

@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="ja">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><meta name="theme-color" content="#102528"><title>捌かれるな！！ — 死んだふりで、死を回避せよ。</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css"></head>
+<body>
+<canvas id="world" aria-label="3D厨房のゲーム画面"></canvas>
+<div id="hud">
+ <div class="top"><div class="panel"><span class="label">SURVIVAL</span><strong id="time">00:00.0</strong><span id="fps">60 FPS</span></div><div class="panel enemy"><span class="label">CHEF / 料理人</span><strong id="enemy">様子見</strong><div class="suspicion"><i id="suspicion"></i></div><small id="enemyDetail">疑い度 100%</small></div></div>
+ <div id="stageHUD"><strong id="stageName">01 まな板</strong><span id="checkpointHUD">チェックポイント 0 / 2</span><canvas id="minimap" width="150" height="230" aria-label="ステージの攻略ルートと現在地"></canvas></div><div id="stageBanner" role="status" hidden></div><div id="combo"></div><div id="hint" role="status"></div>
+ <div class="bottom"><div class="water-head"><span>MOISTURE / 水分</span><b id="waterText">100%</b></div><div class="water"><i id="water"></i></div><div class="controls">A・D：跳ねる　／　マウス・ドラッグ：向きを変える　／　ホイール：ズーム</div></div>
+</div>
+<div class="settings"><label>描画 <select id="quality"><option value="HIGH">HIGH</option><option value="MEDIUM" selected>MEDIUM</option><option value="LOW">LOW</option></select></label><button id="sound" aria-pressed="true">音 ON</button></div>
+<button class="touch left" id="touchA" aria-label="Aで尾を打つ">A</button><button class="touch right" id="touchD" aria-label="Dで尾を打つ">D</button>
+<section id="overlay"><div class="titlecard"><div class="eyebrow">THE KITCHEN ESCAPE / TUTORIAL</div><h1>捌かれるな<span>！！</span></h1><p class="subtitle">死んだふりで、死を回避せよ。</p><p id="message">皿を跳び、炎をかわし、料理人を欺け。<br>5つの区間を突破して、シンクの排水溝へ。</p><div id="results"></div><figure id="deathImage" hidden><img id="sashimiImage" alt="美しく盛り付けられたマダイの刺身"><figcaption>次は、盛り付けられる前に。</figcaption></figure><div class="instructions"><div><b>01</b><span><strong>A / D を交互に</strong>押しっぱなしは無効。空中でもう一度で2段ジャンプ。</span></div><div><b>02</b><span><strong>料理人の前では、死んだふり</strong>「今だ！」の合図で跳ね、ワゴンの先へ。</span></div><div><b>03</b><span><strong>水分を補給しながら進め</strong>水たまりで回復。2つのチェックポイントから再挑戦。</span></div></div><button id="start" disabled>魚を読み込み中…</button><button id="newRun" hidden>最初からやり直す</button><p id="loadingStatus" role="status">Blender製マダイ / PBRテクスチャを読み込んでいます</p><p class="record" id="record"></p></div></section>
+<script type="module" src="/game.js"></script>
+</body></html>

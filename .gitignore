@@ -1,0 +1,9 @@
+node_modules/
+dist/
+test-results/
+playwright-report/
+*.log
+
+# Generated browser captures; source, models and development backups are preserved.
+tests/screenshots/
+tests/pages-smoke-results.json

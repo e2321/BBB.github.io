@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {chromium} from '@playwright/test';
+const browser=await chromium.launch({channel:'msedge',headless:true,args:['--use-angle=swiftshader','--enable-webgl']});
+try{
+ const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(process.env.PREVIEW_URL||'http://127.0.0.1:4174/');
+ await page.waitForFunction(()=>!document.querySelector('#start').disabled,null,{timeout:180000});
+ assert.equal(await page.locator('#quality').inputValue(),'MEDIUM');
+ await page.locator('#start').click();await page.keyboard.press('Escape');
+ await page.screenshot({path:'tests/screenshots/v3-medium-intro.png'});
+ assert.deepEqual(errors,[]);console.log(JSON.stringify({quality:'MEDIUM',originalModels:true,shadows:true,errors}));
+}finally{await browser.close();}

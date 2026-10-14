@@ -1,0 +1,36 @@
+{
+  "bones": [
+    "root",
+    "pelvis",
+    "chest",
+    "neck",
+    "head",
+    "arm_-1",
+    "forearm_-1",
+    "hand_-1",
+    "thigh_-1",
+    "shin_-1",
+    "foot_-1",
+    "arm_1",
+    "forearm_1",
+    "hand_1",
+    "thigh_1",
+    "shin_1",
+    "foot_1"
+  ],
+  "animations": [
+    "Idle",
+    "Walk",
+    "Windup",
+    "Throw",
+    "Inspect",
+    "Stunned",
+    "Capture",
+    "IntroChop"
+  ],
+  "vertices": 36547,
+  "triangles": 72276,
+  "height_m": 1.9,
+  "glb_bytes": 2713356,
+  "blender": "5.2.2 LTS"
+}

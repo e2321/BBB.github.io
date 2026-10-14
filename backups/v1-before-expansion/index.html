@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="ja">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><meta name="theme-color" content="#102528"><title>捌かれるな！！ — 死んだふりで、死を回避せよ。</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<canvas id="world" aria-label="3D厨房のゲーム画面"></canvas>
+<div id="hud">
+ <div class="top"><div class="panel"><span class="label">SURVIVAL</span><strong id="time">00:00.0</strong><span id="fps">60 FPS</span></div><div class="panel enemy"><span class="label">CHEF / 料理人</span><strong id="enemy">様子見</strong><div class="suspicion"><i id="suspicion"></i></div><small id="enemyDetail">疑い度 100%</small></div></div>
+ <div id="combo"></div><div id="hint" role="status"></div>
+ <div class="bottom"><div class="water-head"><span>MOISTURE / 水分</span><b id="waterText">100%</b></div><div class="water"><i id="water"></i></div><div class="controls">A・D：跳ねる　／　マウス・ドラッグ：向きを変える　／　ホイール：ズーム</div></div>
+</div>
+<div class="settings"><label>描画 <select id="quality"><option value="HIGH">HIGH</option><option value="MEDIUM" selected>MEDIUM</option><option value="LOW">LOW</option></select></label><button id="sound" aria-pressed="true">音 ON</button></div>
+<button class="touch left" id="touchA" aria-label="Aで尾を打つ">A</button><button class="touch right" id="touchD" aria-label="Dで尾を打つ">D</button>
+<section id="overlay"><div class="titlecard"><div class="eyebrow">A FISH. ONE LAST CHANCE.</div><h1>捌かれるな<span>！！</span></h1><p class="subtitle">死んだふりで、死を回避せよ。</p><p id="message">ここは厨房。あなたは、まな板の上の魚。<br>跳ねて逃げろ。動きを止めて欺け。排水溝が出口だ。</p><div id="results"></div><div class="instructions"><div><b>01</b><span><strong>A / D を交互に</strong>リズムよく跳ねる。空中でもう一度。</span></div><div><b>02</b><span><strong>じっと、死んだふり</strong>料理人が手を伸ばしたら、跳ねて驚かせる。</span></div><div><b>03</b><span><strong>シンクへ逃げ込め</strong>マウスで進む方向を変え、光る排水溝へ。</span></div></div><button id="start">START <span>→</span></button><p class="record" id="record"></p></div></section>
+<script type="module" src="/game.js"></script>
+</body></html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ja">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><meta name="theme-color" content="#102528"><title>捌かれるな！！ — 死んだふりで、死を回避せよ。</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css"></head>
+<body>
+<canvas id="world" aria-label="3D厨房のゲーム画面"></canvas>
+<div id="hud">
+ <div class="top"><div class="panel"><span class="label">SURVIVAL</span><strong id="time">00:00.0</strong><span id="fps">60 FPS</span></div><div class="panel enemy"><span class="label">CHEF / 料理人</span><strong id="enemy">様子見</strong><div class="suspicion"><i id="suspicion"></i></div><small id="enemyDetail">疑い度 100%</small></div></div>
+ <div id="stageHUD"><strong id="stageName">01 まな板</strong><span id="checkpointHUD">チェックポイント 0 / 2</span><canvas id="minimap" width="150" height="230" aria-label="ステージの攻略ルートと現在地"></canvas></div><div id="stageBanner" role="status" hidden></div><div id="combo"></div><div id="hint" role="status"></div>
+ <div class="bottom"><div class="water-head"><span>MOISTURE / 水分</span><b id="waterText">100%</b></div><div class="water"><i id="water"></i></div><div class="controls">A・D：跳ねる　／　マウス・ドラッグ：向きを変える　／　ホイール：ズーム</div></div>
+</div>
+<div class="settings"><label>描画 <select id="quality"><option value="HIGH">HIGH</option><option value="MEDIUM" selected>MEDIUM</option><option value="LOW">LOW</option></select></label><button id="sound" aria-pressed="true">音 ON</button></div>
+<button class="touch left" id="touchA" aria-label="Aで尾を打つ">A</button><button class="touch right" id="touchD" aria-label="Dで尾を打つ">D</button>
+<section id="overlay"><div class="titlecard"><div class="eyebrow">ONE FISH. NO SECOND CHANCES.</div><h1>捌かれるな<span>！！</span></h1><p class="subtitle">死んだふりで、死を回避せよ。</p><p id="message">包丁が振り下ろされる、その前に。<br>必死に跳ねて、厨房を生き延びろ。</p>
+<div id="modeSelect" class="mode-grid"><button id="escapeMode" class="mode-card selected" aria-pressed="true"><small>ESCAPE</small><strong>脱出モード</strong><span>約43mの厨房を突破。最後の排水溝へ。</span></button><button id="survivalMode" class="mode-card" aria-pressed="false"><small>ENDLESS SURVIVAL</small><strong>サバイバルモード</strong><span>9つの台を行き来。増える料理人から逃げ続ける。</span></button></div>
+<div id="results"></div><figure id="deathImage" hidden><img id="sashimiImage" alt="料理写真"><figcaption>次は、盛り付けられる前に。</figcaption></figure><div class="instructions"><div><b>01</b><span><strong>A / D を交互に、ビタン！</strong>カメラの向きへ跳ねる。空中でもう一度で2段ジャンプ。</span></div><div><b>02</b><span><strong>動きを止めて死んだふり</strong>手が伸びたら、広い「今だ！」の合図で奇襲。</span></div><div><b>03</b><span><strong>炎は即死。水分にも注意</strong>赤い輪を避け、水場で回復。橋と足場を使おう。</span></div></div>
+<button id="start" disabled>モデルを読み込み中…</button><div class="secondary-actions"><button id="rankingButton">サバイバル記録 TOP 10</button><button id="newRun" hidden>最初からやり直す</button><button id="returnTitle" hidden>タイトルに戻る</button></div><p id="loadingStatus" role="status">オリジナルの魚と料理人を読み込んでいます</p><p class="record" id="record"></p></div></section>
+<section id="ranking" hidden aria-label="サバイバルランキング"><div class="rank-card"><div class="eyebrow">LOCAL SURVIVAL RECORDS</div><h2>生存記録 TOP 10</h2><p>このブラウザに保存した記録</p><div id="rankingRows"></div><button id="closeRanking">戻る</button></div></section>
+<script type="module" src="/game.js"></script>
+</body></html>
