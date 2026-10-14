@@ -10,7 +10,7 @@ export async function loadFish(scene,onProgress=()=>{}) {
 function createFish(gltf,scene,instance=false){
  const root=new THREE.Group(),skin=new THREE.Group();scene.add(root);root.add(skin);skin.add(gltf.scene);skin.rotation.z=Math.PI/2;skin.position.y=.056-RADIUS;
  const materials=[];let vertices=0,skinnedMeshes=0;
- gltf.scene.traverse(o=>{if(o.isMesh){if(instance)o.material=Array.isArray(o.material)?o.material.map(m=>m.clone()):o.material.clone();o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;vertices+=o.geometry.attributes.position.count;const list=Array.isArray(o.material)?o.material:[o.material];for(const m of list){if(!materials.some(a=>a.mat===m)){materials.push({mat:m,color:m.color.clone(),roughness:m.roughness,clearcoat:m.clearcoat||0});for(const key of ['map','normalMap','roughnessMap'])if(m[key])m[key].anisotropy=4;}}}if(o.isSkinnedMesh)skinnedMeshes++;});
+ gltf.scene.traverse(o=>{if(o.isMesh){if(instance)o.material=Array.isArray(o.material)?o.material.map(m=>m.clone()):o.material.clone();o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;vertices+=o.geometry.attributes.position.count;const list=Array.isArray(o.material)?o.material:[o.material];for(const m of list){if(!materials.some(a=>a.mat===m)){materials.push({mat:m,color:m.color.clone(),originalColor:m.color.clone(),roughness:m.roughness,clearcoat:m.clearcoat||0});for(const key of ['map','normalMap','roughnessMap'])if(m[key])m[key].anisotropy=4;}}}if(o.isSkinnedMesh)skinnedMeshes++;});
  if(!skinnedMeshes)throw new Error('魚GLBにスキンメッシュがありません');
  const headBone=gltf.scene.getObjectByName('head');
  const mixer=new THREE.AnimationMixer(gltf.scene),actions=new Map();
@@ -21,7 +21,7 @@ function createFish(gltf,scene,instance=false){
  play('FeignDeath');
  const api={root,skin,animations:[...actions.keys()],vertices,skinnedMeshes,play,
   createInstance(parent){return createFish({...gltf,scene:clone(gltf.scene)},parent,true);},
-  accent(color){for(const item of materials){if(/skin|scale/i.test(item.mat.name)){item.color.lerp(new THREE.Color(color),.16);item.mat.color.copy(item.color);}}},
+  accent(color){for(const item of materials){if(/skin|scale/i.test(item.mat.name)){item.color.copy(item.originalColor).lerp(new THREE.Color(color),.28);item.mat.color.copy(item.color);}}},
   rainbow(amount,time,hit=false){if(hit)return;for(const {mat} of materials){if(mat.emissive)mat.emissive.setHSL((time*.12+mat.id*.03)%1,.8,.09*amount);}},
   flash(value){for(const {mat} of materials){mat.emissive?.setRGB(value?1.8:0,value?1.8:0,value?1.8:0);}},
   headPosition(target){headBone.getWorldPosition(target);},

@@ -1,10 +1,11 @@
 import {BattleMode} from './battle-view.js';
 import {BattleSimulation} from './battle-simulation.js';
+import {remoteFlopPose} from './online-motion.js';
 // Only animation/position are predicted. BP, HP, water, item ownership and results stay authoritative.
 export class OnlineBattleMode extends BattleMode{
  constructor(scene,camera,fish,effects,audio,chefFactory,localId,send){super(scene,camera,fish,effects,audio,chefFactory,'normal',localId);this.send=send;this.predictor=new BattleSimulation();this.lastSnapshot=0;this.targets=new Map();this.lastAim=0;this.start();this.sim.debugPaused=true;}
  receive(data){if(!data||!Array.isArray(data.players)||data.players.length!==4)return;this.lastSnapshot=performance.now();this.sim.state=data.state;this.sim.time=data.time;this.sim.countdownElapsed=data.countdownElapsed;this.sim.countdownValue=data.countdownValue;this.sim.result=data.result||[];
-  for(const remote of data.players){const p=this.sim.players[remote.id];if(!p)continue;const position={...p.p},amount=p.rainbowAmount;Object.assign(p,remote);p.rainbowAmount=amount;p.p=position;this.targets.set(p.id,{...remote.p});if(p.dead||Math.hypot(p.p.x-remote.p.x,p.p.y-remote.p.y,p.p.z-remote.p.z)>3)Object.assign(p.p,remote.p);}
+  for(const remote of data.players){const p=this.sim.players[remote.id];if(!p)continue;const position={...p.p},amount=p.rainbowAmount;Object.assign(p,remote);p.rainbowAmount=amount;p.p=position;this.targets.set(p.id,{...remote.p,v:{...remote.v},time:data.time});if(p.identityColor!==remote.color&&remote.color){this.models[p.id].accent(remote.color);p.identityColor=remote.color;}if(p.dead||Math.hypot(p.p.x-remote.p.x,p.p.y-remote.p.y,p.p.z-remote.p.z)>3)Object.assign(p.p,remote.p);}
   for(const k of this.sim.projectiles)k.active=false;for(const k of data.projectiles||[])Object.assign(this.sim.projectiles[k.id],k,{p:{...k.p},prev:{...k.prev},v:{...k.v}});
   this.sim.boosts=data.boosts||[];this.sim.hearts=data.hearts||[];this.sim.sashimi=data.sashimi||[];this.sim.events=data.events||[];this.events();
  }
@@ -13,7 +14,7 @@ export class OnlineBattleMode extends BattleMode{
  fire(){if(this.paused||!this.connected||this.sim.state!=='PLAYING')return;this.sim.events.length=0;const old=this.sim.fire;this.sim.fire=(_id,d)=>{const n=Math.hypot(d.x,d.y,d.z);this.send({kind:'fire',direction:{x:d.x/n,y:d.y/n,z:d.z/n}});};try{super.fire();}finally{this.sim.fire=old;}}
  togglePause(){this.paused=!this.paused;document.getElementById('battlePause').hidden=!this.paused;if(this.paused){this.swimming=false;if(document.pointerLockElement)document.exitPointerLock();}else this.lock();}
  update(raw,dt=Math.min(raw,.1)){if(!this.send){super.update(0,dt);return;}this.connected=performance.now()-this.lastSnapshot<2500;if(this.connected&&!this.paused&&performance.now()-this.lastAim>50){this.send({kind:'aim',yaw:this.yaw,pitch:this.pitch});this.send({kind:'swim',enabled:!!this.swimming});this.lastAim=performance.now();}
-  for(const p of this.sim.players){const target=this.targets.get(p.id);if(!target)continue;if(p.id===this.localId&&!p.grounded&&!p.dead&&this.sim.state==='PLAYING'){p.scoringJump=false;this.predictor.move(p,dt);}const blend=1-Math.exp(-(p.id===this.localId?9:15)*dt);for(const key of ['x','y','z'])p.p[key]+=(target[key]-p.p[key])*blend;}
+  for(const p of this.sim.players){const target=this.targets.get(p.id);if(!target)continue;if(p.id===this.localId&&!p.grounded&&!p.dead&&this.sim.state==='PLAYING'){p.scoringJump=false;this.predictor.move(p,dt);}const blend=1-Math.exp(-(p.id===this.localId?9:15)*dt);for(const key of ['x','y','z']){if(p.id!==this.localId&&['A','D'].includes(p.lastKey)&&key==='y')continue;p.p[key]+=(target[key]-p.p[key])*blend;}if(p.id!==this.localId&&['A','D'].includes(p.lastKey)){const motion=remoteFlopPose(p,target,Math.min(.1,(performance.now()-this.lastSnapshot)/1000),this.sim.state);p.p.y=motion.y;p.visualTime=motion.time;}else delete p.visualTime;}
   super.update(0,dt);document.getElementById('onlineMatchStatus').textContent=this.connected?'接続中':'通信が途切れています…';
  }
 }
