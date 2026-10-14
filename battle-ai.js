@@ -33,7 +33,7 @@ export class BotController{
   if(p.water<BOT_RULES.refillThreshold)p.ai.refilling=true;if(p.water>=80)p.ai.refilling=false;
   if(s.time>=p.ai.nextThink){p.ai.nextThink=s.time+BOT_RULES.thinkInterval;let nearest=null,seen=null,dist=Infinity,seenDist=Infinity;for(const q of s.players){if(q===p||q.dead)continue;const d=(q.p.x-p.p.x)**2+(q.p.z-p.p.z)**2;if(d<dist){dist=d;nearest=q;}if(d<seenDist&&visible(s,p,q)){seenDist=d;seen=q;}}
    const player=s.players[0],playerLeads=s.ranking.find(q=>q.id===0)?.rank===1&&player.points>0;p.ai.playerLeads=playerLeads;if(playerLeads&&!player.dead&&seen&&Math.hypot(player.p.x-p.p.x,player.p.z-p.p.z)<12&&visible(s,p,player)&&s.random()<(s.stage.id==='kitchen'?KITCHEN_BOT_RULES.leaderTargetChance:.18))seen=player;p.ai.target=(seen||nearest)?.id;p.ai.seen=!!seen;
-   p.ai.food=p.hp<BATTLE.hp?s.sashimi.filter(i=>i.active&&i.expires>s.time&&Math.hypot(i.p.x-p.p.x,i.p.z-p.p.z)<7).sort((a,b)=>Math.hypot(a.p.x-p.p.x,a.p.z-p.p.z)-Math.hypot(b.p.x-p.p.x,b.p.z-p.p.z))[0]:null;
+   p.ai.food=p.hp<this.sim.balance.hp?s.sashimi.filter(i=>i.active&&i.expires>s.time&&Math.hypot(i.p.x-p.p.x,i.p.z-p.p.z)<7).sort((a,b)=>Math.hypot(a.p.x-p.p.x,a.p.z-p.p.z)-Math.hypot(b.p.x-p.p.x,b.p.z-p.p.z))[0]:null;
    p.ai.boost=s.time>=p.boostUntil?s.boosts.filter(i=>i.active&&Math.hypot(i.p.x-p.p.x,i.p.z-p.p.z)<6).sort((a,b)=>Math.hypot(a.p.x-p.p.x,a.p.z-p.p.z)-Math.hypot(b.p.x-p.p.x,b.p.z-p.p.z))[0]:null;
    p.ai.waterTarget=s.puddles.reduce((best,w)=>Math.hypot(w.x-p.p.x,w.z-p.p.z)<Math.hypot(best.x-p.p.x,best.z-p.p.z)?w:best);
    if(!p.ai.pointGoal||s.time>=(p.ai.nextPointGoal||0)||Math.hypot(p.ai.pointGoal.x-p.p.x,p.ai.pointGoal.z-p.p.z)<1){p.ai.pointGoal=this.nodes[Math.floor(s.random()*this.nodes.length)];p.ai.nextPointGoal=s.time+6;}

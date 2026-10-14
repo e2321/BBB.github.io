@@ -22,6 +22,7 @@ function createFish(gltf,scene,instance=false){
  const api={root,skin,animations:[...actions.keys()],vertices,skinnedMeshes,play,
   createInstance(parent){return createFish({...gltf,scene:clone(gltf.scene)},parent,true);},
   accent(color){for(const item of materials){if(/skin|scale/i.test(item.mat.name)){item.color.lerp(new THREE.Color(color),.16);item.mat.color.copy(item.color);}}},
+  rainbow(amount,time,hit=false){if(hit)return;for(const {mat} of materials){if(mat.emissive)mat.emissive.setHSL((time*.12+mat.id*.03)%1,.8,.09*amount);}},
   flash(value){for(const {mat} of materials){mat.emissive?.setRGB(value?1.8:0,value?1.8:0,value?1.8:0);}},
   headPosition(target){headBone.getWorldPosition(target);},
   strength(value){motionStrength=THREE.MathUtils.clamp(value,.2,1);actions.get(current)?.setEffectiveWeight(motionStrength);},

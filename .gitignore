@@ -3,6 +3,10 @@ dist/
 test-results/
 playwright-report/
 *.log
+.cache/
+.env
+.env.local
+server/.env
 
 # Generated browser captures; source, models and development backups are preserved.
 tests/screenshots/

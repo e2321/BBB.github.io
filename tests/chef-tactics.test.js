@@ -19,10 +19,10 @@ test('countdown freezes all authoritative game state and accepts only cosmetic a
   assert.equal(s.jump(0,'A'),true);assert.equal(s.jump(0,'A'),false);advance(s,.5);assert.equal(s.jump(0,'D'),true);
   s.collectBoosts();assert.equal(s.damage(s.players[0],1),false);advance(s,2.49);
   assert.equal(s.state,'COUNTDOWN');assert.equal(s.time,0);assert.deepEqual(s.players.map(p=>p.p),positions);assert.deepEqual(s.chefs.map(c=>({x:c.x,z:c.z})),chefs);
-  assert.ok(s.players.every(p=>p.water===100&&p.points===0&&p.combo===0&&p.hp===5&&p.boostUntil===0&&!p.feigning));assert.ok(s.boosts.every(b=>b.active));assert.ok(s.projectiles.every(k=>!k.active));
+  assert.ok(s.players.every(p=>p.water===100&&p.points===0&&p.combo===0&&p.hp===BATTLE.hp&&p.boostUntil===0&&!p.feigning));assert.ok(s.boosts.every(b=>b.active));assert.ok(s.projectiles.every(k=>!k.active));
   assert.ok(s.events.some(e=>e.type==='warmupLand'));advance(s,.01);assert.equal(s.state,'PLAYING');assert.equal(s.time,0);
   assert.deepEqual(s.events.filter(e=>e.type==='countdown').map(e=>e.value),[3,2,1,0]);assert.equal(s.events.filter(e=>e.type==='matchStart').length,1);
-  assert.ok(s.players.every(p=>!p.buffer&&!p.inputKey&&p.acceleration===0&&p.slideUntil===0));s.step();assert.ok(s.time>0);assert.equal(s.jump(0,'Space'),true);assert.equal(s.players[0].water,97);
+  assert.ok(s.players.every(p=>!p.buffer&&!p.inputKey&&p.acceleration===0&&p.slideUntil===0));s.step();assert.ok(s.time>0);assert.equal(s.jump(0,'Space'),true);assert.equal(s.players[0].water,98);
  }
 });
 test('three-second countdown is independent of update frequency and leaves the full ninety seconds',()=>{
@@ -33,22 +33,22 @@ test('two chefs chase the closest visible live fish including a CPU and remain o
  const other=s.chefs[1];s.players[1].p={x:other.x,y:.28,z:other.z-4};advance(s,.35);assert.equal(other.target,1);assert.equal(s.ranking.length,4);assert.equal(s.chefs.length,2);assert.ok(s.chefs.every(c=>c.points===undefined));
 });
 test('chef attacks have a visible windup, one damage and a cooldown; jump, retreat and equipment can evade',()=>{
- for(const scenario of ['hit','jump','retreat','wall']){const s=game(),c=s.chefs[0],p=s.players[0];s.updateFeign=()=>{};p.p={x:c.x,y:.28,z:c.z+1};c.nextAttack=0;s.step();assert.equal(c.state,'ATTACKING');advance(s,.4);assert.equal(p.hp,5);
+ for(const scenario of ['hit','jump','retreat','wall']){const s=game(),c=s.chefs[0],p=s.players[0];s.updateFeign=()=>{};p.p={x:c.x,y:.28,z:c.z+1};c.nextAttack=0;s.step();assert.equal(c.state,'ATTACKING');advance(s,.4);assert.equal(p.hp,BATTLE.hp);
   if(scenario==='jump'){s.jump(0,'Space');}if(scenario==='retreat')p.p.z+=3;if(scenario==='wall')s.obstacles.push({min:{x:c.x-1,y:0,z:c.z+.3},max:{x:c.x+1,y:2,z:c.z+.5}});
-  advance(s,.36);assert.equal(p.hp,scenario==='hit'?4:5,scenario);if(scenario==='hit'){assert.ok(s.time-c.lastThrow<1/60);advance(s,2);assert.equal(p.hp,4);}
+  advance(s,.36);assert.equal(p.hp,scenario==='hit'?BATTLE.hp-1:BATTLE.hp,scenario);if(scenario==='hit'){assert.ok(s.time-c.lastThrow<1/60);advance(s,2);assert.equal(p.hp,BATTLE.hp-1);}
  }
 });
 test('chef deaths use existing sashimi and unlimited five-second respawns without BP theft',()=>{
  const s=game(),c=s.chefs[0],p=s.players[0];s.updateFeign=()=>{};p.p={x:c.x,y:.28,z:c.z+1};p.points=1800;p.hp=1;c.nextAttack=0;advance(s,.8);
  assert.equal(p.dead,true);assert.equal(p.hp,0);assert.equal(p.points,1800);assert.equal(s.sashimi.length,1);assert.equal(s.events.filter(e=>e.type==='kill').length,1);assert.equal(s.events.find(e=>e.type==='kill').killer,null);
- advance(s,5);assert.equal(p.dead,false);assert.equal(p.hp,5);assert.equal(p.water,100);assert.equal(p.points,1800);assert.equal(s.ranking.length,4);
+ advance(s,5);assert.equal(p.dead,false);assert.equal(p.hp,BATTLE.hp);assert.equal(p.water,100);assert.equal(p.points,1800);assert.equal(s.ranking.length,4);
 });
 test('feigning before a committed strike leads to inspection and can safely outlast its bonus window',()=>{
  const s=game(),c=s.chefs[0],p=s.players[0];p.p={x:c.x,y:.28,z:c.z+1};c.nextAttack=0;s.step();assert.equal(c.state,'ATTACKING');s.feign(0);advance(s,3);
- assert.equal(p.hp,5);assert.equal(p.feigning,true);assert.equal(p.points,0);assert.equal(c.unguarded,false);assert.equal(c.ignoreSession,`0:${p.feignSession}`);
+ assert.equal(p.hp,BATTLE.hp);assert.equal(p.feigning,true);assert.equal(p.points,0);assert.equal(c.unguarded,false);assert.equal(c.ignoreSession,`0:${p.feignSession}`);
 });
 test('a late feign in front of an already committed chef does not guarantee protection',()=>{
- const s=game(),c=s.chefs[0],p=s.players[0];p.p={x:c.x,y:.28,z:c.z+1};c.nextAttack=0;s.step();advance(s,CHEF_RULES.commitTime+.02);s.feign(0);advance(s,.4);assert.equal(p.hp,4);
+ const s=game(),c=s.chefs[0],p=s.players[0];p.p={x:c.x,y:.28,z:c.z+1};c.nextAttack=0;s.step();advance(s,CHEF_RULES.commitTime+.02);s.feign(0);advance(s,.4);assert.equal(p.hp,BATTLE.hp-1);
 });
 test('surprise has a 0.8-second unguarded window and a 0.4-second release deadline at different tick rates',()=>{
  assert.equal(FEIGN_RULES.unguarded,.8);assert.equal(FEIGN_RULES.releaseWindow,.4);assert.equal(FEIGN_RULES.bonusDistance,1.5);
@@ -77,8 +77,8 @@ test('a failed session is blocked briefly; a later fresh attempt can earn the sa
  const s=game(),{p,c}=observed(s);p.points=1200;s.jump(0,'A');assert.equal(p.points,200);const retry=c.retryUntil;p.grounded=true;p.buffer=null;p.v={x:0,y:0,z:0};s.feign(0);advance(s,.2);assert.equal(c.unguarded,false);
  s.time=retry+.01;p.feigning=false;p.lastJump=-10;p.inputKey='';p.p={x:c.x,y:.28,z:c.z+1};c.target=null;c.state='CHASING';c.nextTargetThink=0;ready(s);const before=p.points;s.jump(0,'D');assert.equal(p.points-before,500);
 });
-test('both BBB stages recover eight per second smoothly for every fish, clamped at one hundred',()=>{
- assert.equal(FLOP_RULES.waterRecovery,8);for(const stage of ['normal','kitchen'])for(const id of [0,1,2,3]){const s=game(stage),p=s.players[id],w=s.puddles[0];p.p={x:w.x,y:.28,z:w.z};p.water=20;s.chefs=[];advance(s,1);assert.ok(Math.abs(p.water-28)<1e-8);p.water=99;advance(s,1);assert.equal(p.water,100);assert.equal(p.points,0);}
+test('both BBB stages recover ten per second smoothly for every fish, clamped at one hundred',()=>{
+ assert.equal(FLOP_RULES.waterRecovery,10);for(const stage of ['normal','kitchen'])for(const id of [0,1,2,3]){const s=game(stage),p=s.players[id],w=s.puddles[0];p.p={x:w.x,y:.28,z:w.z};p.water=20;s.chefs=[];advance(s,1);assert.ok(Math.abs(p.water-30)<1e-8);p.water=99;advance(s,1);assert.equal(p.water,100);assert.equal(p.points,0);}
 });
 test('normal and kitchen share the restored historical CPU cadence and efficiency',()=>{
  assert.equal(botAttackRate('normal',false),1);assert.equal(botAttackRate('normal',true),1);assert.equal(botAttackRate('kitchen',false),1);assert.equal(botAttackRate('kitchen',true),1);assert.equal(BOT_RULES.scoreEfficiency,1);assert.equal(BOT_RULES.accelerationEfficiency,1);

@@ -14,7 +14,10 @@
     "model:chef": "node tools/build-fish.mjs chef",
     "check:pages": "node tools/check-pages.mjs",
     "test:pages": "node tests/pages-smoke.mjs",
-    "prepare:submission": "npm run build && npm run check:pages"
+    "prepare:submission": "npm run build && npm run check:pages",
+    "server:install": "npm --prefix server install",
+    "server:dev": "npm --prefix server run dev",
+    "test:online": "npm --prefix server test"
   },
   "dependencies": {
     "three": "0.180.0"

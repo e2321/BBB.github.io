@@ -4,7 +4,7 @@ import {segmentBox} from './simulation.js';
 import {INSPECTION} from './physics-config.js';
 export class KitchenChefs{
  constructor(sim){this.sim=sim;}
- reset(){this.sim.chefs=this.sim.stage.chefs.map(def=>({...def,y:0,state:'CHASING',timer:0,speed:0,heading:0,lastThrow:-10,nextAttack:1.5+def.id,nextBonus:0,retryUntil:0,lastSession:null,target:null,unguarded:false,patrolIndex:0,path:[],nextThink:0,nextTargetThink:0,stunUntil:0}));}
+ reset(){this.sim.chefs=this.sim.stage.chefs.map(def=>({...def,y:0,state:'CHASING',timer:0,speed:0,heading:0,lastThrow:-10,nextAttack:1.5+def.id,nextBonus:0,retryUntil:0,lastSession:null,target:null,question:0,unguarded:false,patrolIndex:0,path:[],nextThink:0,nextTargetThink:0,stunUntil:0}));}
  distance(c,p){return Math.hypot(c.x-p.p.x,c.y+BATTLE.bodyY-p.p.y,c.z-p.p.z);}
  visible(c,p){return !this.sim.obstacles.some(o=>segmentBox({x:c.x,y:c.y+.45,z:c.z},p.p,o,.035));}
  canAttack(c,p){return p&&!p.dead&&this.distance(c,p)<=CHEF_RULES.attackDistance&&Math.abs(p.p.y-c.y-BATTLE.bodyY)<=CHEF_RULES.attackHeight&&this.visible(c,p);}
@@ -31,7 +31,7 @@ export class KitchenChefs{
    const lost=Math.min(p.points,FEIGN_RULES.penalty);p.points=Math.max(0,p.points-FEIGN_RULES.penalty);c.retryUntil=s.time+FEIGN_RULES.retryDelay;c.target=p.id;this.transition(c,'CHASING');c.nextTargetThink=s.time+1;c.nextAttack=Math.max(c.nextAttack,s.time+.6);s.emit('chefFail',{id:p.id,chef:c.id,delta:-lost,penalty:FEIGN_RULES.penalty,total:p.points,p:{...p.p}});
   }
  }
- update(dt){const s=this.sim;if(s.state!=='PLAYING')return;for(const c of s.chefs){if(c.tutorialDisabled)continue;c.timer+=dt;c.speed=0;const p=s.players[c.target];
+ update(dt){const s=this.sim;if(s.state!=='PLAYING')return;for(const c of s.chefs){if(c.tutorialDisabled)continue;c.timer+=dt;c.speed=0;const inspecting=['APPROACHING','INSPECTING'].includes(c.state);c.question=Math.max(0,Math.min(100,(c.question||0)+(inspecting?65:-18)*dt));const p=s.players[c.target];
    if(c.state==='STUNNED'){if(c.timer<.5){const d=Math.hypot(c.recoil.x,c.recoil.z)||1;this.move(c,{x:c.x+c.recoil.x/d,z:c.z+c.recoil.z/d},dt,1.8);}if(s.time>=c.stunUntil)this.transition(c,'CHASING');continue;}
    if(c.state==='ATTACKING'){
     if(!p||p.dead||(!this.visible(c,p))){this.transition(c,'CHASING');c.nextAttack=s.time+.8;continue;}
@@ -43,10 +43,10 @@ export class KitchenChefs{
     }continue;
    }
    if(c.state==='RELEASE_WAIT'){if(!p||p.dead||c.timer>FEIGN_RULES.releaseWindow+1e-7)this.transition(c,'CHASING');continue;}
-   if(c.state==='INSPECTING'){if(!p||p.dead||!p.feigning||p.feignSession!==c.watchedSession||this.distance(c,p)>FEIGN_RULES.bonusDistance||!this.visible(c,p)){this.transition(c,'CHASING');continue;}c.unguarded=c.timer+1e-7>=Math.max(FEIGN_RULES.inspection,INSPECTION.start)&&c.timer<=FEIGN_RULES.inspection+FEIGN_RULES.unguarded+1e-7;if(c.timer>FEIGN_RULES.inspection+FEIGN_RULES.unguarded+1e-7){c.ignoreSession=`${p.id}:${p.feignSession}`;c.dismissedUntil=s.time+1.4;this.transition(c,'CHASING');}continue;}
-   if(c.state==='APPROACHING'){if(p&&c.timer>FEIGN_RULES.approachTimeout){c.ignoreSession=`${p.id}:${p.feignSession}`;c.target=null;this.transition(c,'CHASING');continue;}if(!p||p.dead||!p.feigning||Math.abs(p.p.y-BATTLE.bodyY-c.y)>.6){this.transition(c,'CHASING');continue;}const distance=Math.hypot(c.x-p.p.x,c.z-p.p.z);if(distance<=FEIGN_RULES.inspectDistance){c.watchedSession=p.feignSession;this.transition(c,'INSPECTING');}else this.move(c,p.p,dt,.85);continue;}
+   if(c.state==='INSPECTING'){if(!p||p.dead||!p.feigning||p.feignSession!==c.watchedSession||this.distance(c,p)>FEIGN_RULES.bonusDistance||!this.visible(c,p)){this.transition(c,'CHASING');continue;}c.unguarded=c.question>=95&&c.timer+1e-7>=(s.stage.id==='tutorial'?.6:FEIGN_RULES.inspection)&&c.timer<=(s.stage.id==='tutorial'?.6:FEIGN_RULES.inspection)+FEIGN_RULES.unguarded+1e-7;if(c.timer>(s.stage.id==='tutorial'?.6:FEIGN_RULES.inspection)+FEIGN_RULES.unguarded+1e-7){c.ignoreSession=`${p.id}:${p.feignSession}`;c.dismissedUntil=s.time+1.4;this.transition(c,'CHASING');}continue;}
+   if(c.state==='APPROACHING'){if(p&&c.timer>FEIGN_RULES.approachTimeout){c.ignoreSession=`${p.id}:${p.feignSession}`;c.target=null;this.transition(c,'CHASING');continue;}if(!p||p.dead||!p.feigning||Math.abs(p.p.y-BATTLE.bodyY-c.y)>.6){this.transition(c,'CHASING');continue;}const distance=Math.hypot(c.x-p.p.x,c.z-p.p.z);if(distance<=FEIGN_RULES.inspectDistance){c.watchedSession=p.feignSession;c.question=Math.max(c.question,70);this.transition(c,'INSPECTING');}else this.move(c,p.p,dt,s.stage.id==='tutorial'?.85:1);continue;}
    const candidates=s.players.filter(q=>!q.dead&&q.feigning&&!q.inWater&&Math.abs(q.p.y-BATTLE.bodyY-c.y)<=.6&&s.time>=c.nextBonus&&s.time>=c.retryUntil&&c.lastSession!==`${q.id}:${q.feignSession}`&&c.ignoreSession!==`${q.id}:${q.feignSession}`&&Math.hypot(c.x-q.p.x,c.z-q.p.z)<=FEIGN_RULES.noticeDistance&&this.visible(c,q)).sort((a,b)=>this.distance(c,a)-this.distance(c,b));
-   if(candidates.length){c.target=candidates[0].id;c.observedTarget=candidates[0].id;c.observedSession=candidates[0].feignSession;this.transition(c,'APPROACHING');continue;}
+   if(candidates.length){c.question=Math.max(20,c.question);c.target=candidates[0].id;c.observedTarget=candidates[0].id;c.observedSession=candidates[0].feignSession;this.transition(c,'APPROACHING');continue;}
    if(s.time>=(c.nextTargetThink||0)){c.nextTargetThink=s.time+CHEF_RULES.thinkInterval;const live=s.players.filter(q=>!q.dead&&!q.feigning&&this.distance(c,q)<=CHEF_RULES.noticeDistance&&this.visible(c,q)).sort((a,b)=>this.distance(c,a)-this.distance(c,b));const current=s.players[c.target];if(!current||current.dead||current.feigning||this.distance(c,current)>CHEF_RULES.chaseDistance||!this.visible(c,current))c.target=live[0]?.id??null;}
    const target=s.players[c.target];if(target&&!target.dead&&!target.feigning&&s.time>=(c.dismissedUntil||0)&&this.visible(c,target)){
     if(this.canAttack(c,target)&&s.time>=c.nextAttack){this.transition(c,'ATTACKING');s.emit('chefWarning',{id:target.id,chef:c.id,p:{...target.p}});}
