@@ -80,8 +80,8 @@ test('a failed session is blocked briefly; a later fresh attempt can earn the sa
 test('both BBB stages recover ten per second smoothly for every fish, clamped at one hundred',()=>{
  assert.equal(FLOP_RULES.waterRecovery,10);for(const stage of ['normal','kitchen'])for(const id of [0,1,2,3]){const s=game(stage),p=s.players[id],w=s.puddles[0];p.p={x:w.x,y:.28,z:w.z};p.water=20;s.chefs=[];advance(s,1);assert.ok(Math.abs(p.water-30)<1e-8);p.water=99;advance(s,1);assert.equal(p.water,100);assert.equal(p.points,0);}
 });
-test('normal and kitchen share the restored historical CPU cadence and efficiency',()=>{
- assert.equal(botAttackRate('normal',false),1);assert.equal(botAttackRate('normal',true),1);assert.equal(botAttackRate('kitchen',false),1);assert.equal(botAttackRate('kitchen',true),1);assert.equal(BOT_RULES.scoreEfficiency,1);assert.equal(BOT_RULES.accelerationEfficiency,1);
+test('normal and kitchen share the slightly reduced CPU cadence and efficiency',()=>{
+ assert.equal(botAttackRate('normal',false),.85);assert.equal(botAttackRate('normal',true),.85);assert.equal(botAttackRate('kitchen',false),.85);assert.equal(botAttackRate('kitchen',true),.85);assert.equal(BOT_RULES.scoreEfficiency,.9);assert.equal(BOT_RULES.accelerationEfficiency,.9);
  const counts=[];for(const stage of ['normal','kitchen']){const s=game(stage),p=s.players[1],q=s.players[2];s.chefs=[];p.bot=true;p.p={x:0,y:.28,z:-6};q.p={x:1,y:.28,z:-6};p.ai.nextJump=999;p.ai.nextPrank=999;p.ai.nextFire=0;for(let i=0;i<600;i++){s.time=i/60;s.ai.update(p,1/60);}counts.push(s.events.filter(e=>e.type==='shoot').length);}assert.equal(counts[1],counts[0],JSON.stringify(counts));
 });
 test('CPU chooses flight or feign in response to nearby chefs without freezing all movement',()=>{
