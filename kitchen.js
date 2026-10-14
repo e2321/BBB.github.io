@@ -20,7 +20,7 @@ export function createWorld(realScene,renderer,data){
  const dark=physical('#263537',.45,.4),ceramic=physical('#e7e2d4',.26),blueCeramic=physical('#517a7e',.27),brass=physical('#b59865',.32,.55),iron=physical('#1b2526',.72,.60);
  const cameraObstacles=[];
  for(const b of boxes){if(['carrot','cucumber','tomato','utensil','pot','pan'].includes(b.kind))continue;const {center:p,size:s}=b;
-  let mat=b.id==='floor'?floorMat:b.kind==='wood'?wood:b.kind==='tile'?tile:b.kind==='rail'?dark:steel;
+  let mat=b.id==='floor'?floorMat:['wood','prep-barrier'].includes(b.kind)?wood:b.kind==='tile'?tile:b.kind==='rail'?dark:steel;
   if(b.kind==='plate'||b.kind==='bowl'){
    const tray=cube(scene,[s.x,.07,s.z],[p.x,b.max.y-.035,p.z],steel,.025);cameraObstacles.push(tray);const r=Math.min(s.x,s.z)*.45;
    if(b.kind==='plate')for(let i=0;i<4;i++)lathe(scene,[[0,0],[r*.5,0],[r*.8,.012],[r,.045],[r,.050],[r*.82,.025],[r*.5,.018],[0,.018]],i%2?blueCeramic:ceramic,[p.x,b.max.y-.052-i*.018,p.z]);
@@ -29,6 +29,7 @@ export function createWorld(realScene,renderer,data){
   }else{const m=cube(scene,[s.x,s.y,s.z],[p.x,p.y,p.z],mat,b.kind==='wood'?.025:b.id.startsWith('sink')?.025:b.id.startsWith('wall')?0:.012);if(b.id!=='floor'&&b.id!=='board')cameraObstacles.push(m);}
  }
  for(const b of boxes){const {center:p,size:s}=b;
+  if(b.kind==='prep-barrier'){const color=b.decoration==='carrot'?'#b86731':b.decoration==='cucumber'?'#45643b':'#c7cdd0';for(let i=0;i<3;i++)cube(scene,[s.x-.08,.035,.035],[p.x,p.y+(i-1)*.35,p.z+s.z/2+.005],dark,.006);cube(scene,[.38,.12,.16],[p.x,b.max.y+.06,p.z],physical(color,.6),.01);}
   if(b.kind==='carrot'){const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(p.x,p.y,p.z-.24),new THREE.Vector3(p.x+.02,p.y+.02,p.z),new THREE.Vector3(p.x-.03,p.y,p.z+.24)]);const m=mesh(new THREE.TubeGeometry(curve,28,.055,16,false),physical('#b86731',.62),scene);m.scale.x=1.2;for(let i=0;i<4;i++){const leaf=cube(scene,[.016,.013,.11],[p.x+(i-1.5)*.015,p.y+.03,p.z-.26],physical('#46713d',.8),.004);leaf.rotation.y=i*.6;}}
   if(b.kind==='cucumber'){const m=mesh(new THREE.CapsuleGeometry(.083,s.z-.16,8,32),physical('#45643b',.55),scene,[p.x,p.y,p.z]);m.rotation.x=Math.PI/2;}
   if(b.kind==='tomato'){const m=sphere(scene,[s.x/2,s.y/2,s.z/2],[p.x,p.y,p.z],physical('#a73d28',.38));for(let i=0;i<6;i++){const a=i*Math.PI/3,leaf=cube(scene,[.035,.008,.10],[p.x+Math.sin(a)*.027,p.y+s.y/2,p.z+Math.cos(a)*.027],physical('#3e602e',.85),.006);leaf.rotation.y=a;}}

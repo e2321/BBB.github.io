@@ -32,11 +32,12 @@ export const PLATFORMS = [
  platform('sink-launch',0,-33.0,2.0,1.4,1.10),
 ];
 export const OBSTACLES=[
- box('carrot',-.64,.98,6.25,.22,.26,.58,'carrot'),
- box('cucumber',.66,.97,5.52,.22,.24,.68,'cucumber'),
- box('cutting-knife',-.32,.935,4.92,.72,.17,.18,'utensil'),
- box('tomato',.65,1.0,6.4,.32,.30,.32,'tomato'),
- box('utensil-pot',-1.80,1.16,5.25,.45,.62,.45,'utensil'),
+ // Existing first-zone obstacles form three alternating full-height storage barriers.
+ {...box('carrot',.95,1.35,6.85,2.9,1.0,.22,'prep-barrier'),decoration:'carrot'},
+ {...box('cucumber',-.95,1.35,5.70,2.9,1.0,.22,'prep-barrier'),decoration:'cucumber'},
+ {...box('utensil-pot',.95,1.35,4.55,2.9,1.0,.22,'prep-barrier'),decoration:'utensil'},
+ box('cutting-knife',1.3,.935,6.15,.72,.17,.18,'utensil'),
+ box('tomato',-1.3,1.0,4.98,.32,.30,.32,'tomato'),
  box('stove-pot',-.91,1.22,-3.42,.40,.44,.45,'pot'),
  box('stove-pan',.9,1.12,-4.76,.4,.24,.55,'pan'),
  // Tall arena rails prevent a jump around the chef-controlled trolley.
@@ -60,7 +61,7 @@ export const CHECKPOINTS=[{id:1,name:'食器エリア突破',p:{x:0,y:.95+RADIUS
  {id:3,name:'前半料理人突破',p:{x:0,y:1.05+RADIUS,z:-12.05},sz:.80,sx:2.3},
  {id:4,name:'後半食器突破',p:{x:0,y:1.05+RADIUS,z:-20.95},sz:.80,sx:2.7},
  {id:5,name:'後半通路到達',p:{x:0,y:1.10+RADIUS,z:-27.30},sz:.80,sx:2.8}];
-export const ZONES=[{id:'prep',name:'01 まな板',threshold:Infinity,hint:'A・Dを交互に。食材をよけて、まな板の先へ。'},
+export const ZONES=[{id:'prep',name:'01 まな板',threshold:Infinity,hint:'左・右・左へジグザグ！まな板の収納箱をよけて、低い包丁はジャンプ。'},
  {id:'dishes',name:'02 食器の足場',threshold:3.98,hint:'皿から皿へ！空中でもう一度A / Dで2段ジャンプ。'},
  {id:'stove',name:'03 コンロ',threshold:-2.12,hint:'炎は即死！赤い輪を避け、橙色の高温エリアを短く通れ。'},
  {id:'chef',name:'04 料理人',threshold:-7.90,hint:'止まって死んだふり。手が伸びたらA / Dで奇襲！'},

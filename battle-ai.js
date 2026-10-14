@@ -1,4 +1,4 @@
-import {BATTLE,PUDDLES,angleDelta,clamp} from './battle-rules.js';
+import {BATTLE,BOT_RULES,FEIGN_RULES,movementStrength,angleDelta,clamp} from './battle-rules.js';
 import {segmentBox} from './simulation.js';
 export const BOT_PREDICTIVE_SHOT_RATE=1/3;
 // Select once per attack. All knives then keep the original straight trajectory.
@@ -19,20 +19,32 @@ export class BotController{
  route(a,b){const from=this.nearest(a),to=this.nearest(b),queue=[from.id],previous=new Map([[from.id,null]]);for(let i=0;i<queue.length;i++){const id=queue[i];if(id===to.id)break;for(const next of this.nodes[id].edges)if(!previous.has(next)){previous.set(next,id);queue.push(next);}}if(!previous.has(to.id))return [];const result=[];for(let id=to.id;id!==from.id;id=previous.get(id))result.unshift(this.nodes[id]);return result;}
  update(p,dt){
   const s=this.sim;if(p.dead)return;
-  if(p.water<45)p.ai.refilling=true;if(p.water>=80)p.ai.refilling=false;
-  if(s.time>=p.ai.nextThink){p.ai.nextThink=s.time+.16;let nearest=null,seen=null,dist=Infinity,seenDist=Infinity;for(const q of s.players){if(q===p||q.dead)continue;const d=(q.p.x-p.p.x)**2+(q.p.z-p.p.z)**2;if(d<dist){dist=d;nearest=q;}if(d<seenDist&&visible(s,p,q)){seenDist=d;seen=q;}}p.ai.target=(seen||nearest)?.id;p.ai.seen=!!seen;
-   p.ai.food=p.hp<BATTLE.hp?s.sashimi.filter(i=>i.active&&i.expires>s.time&&Math.hypot(i.p.x-p.p.x,i.p.z-p.p.z)<7).sort((a,b)=>Math.hypot(a.p.x-p.p.x,a.p.z-p.p.z)-Math.hypot(b.p.x-p.p.x,b.p.z-p.p.z))[0]:null;const q=s.players[p.ai.target];p.ai.waterTarget=PUDDLES.reduce((best,w)=>Math.hypot(w.x-p.p.x,w.z-p.p.z)<Math.hypot(best.x-p.p.x,best.z-p.p.z)?w:best);const goal=p.ai.food?.p||(p.ai.refilling?p.ai.waterTarget:q?.p);if(goal){p.ai.state=p.ai.refilling?'REFILL':seen?'CHASE':'SEARCH';if(!seen||s.obstacles.some(o=>segmentBox({x:p.p.x,y:.1,z:p.p.z},{x:goal.x,y:.1,z:goal.z},o,.65)))p.ai.path=this.route(p.p,goal);else p.ai.path=[];}
+  if(s.stage.id==='kitchen'){
+   p.ai.nextPrank??=10+p.id*4;if(s.time>=p.ai.nextPrank){p.ai.nextPrank=s.time+25+p.id*3;const c=s.chefs.find(c=>s.time>=c.nextBonus&&Math.hypot(c.x-p.p.x,c.z-p.p.z)<5);if(c&&p.water>65&&s.random()<.25){p.ai.prankChef=c.id;p.ai.prankUntil=s.time+7;}}
+   const c=s.chefs.find(c=>c.id===p.ai.prankChef);if(c&&s.time<p.ai.prankUntil){if(p.feigning){if(c.target===p.id&&c.unguarded){s.jump(p.id,p.inputKey==='A'?'D':'A');p.ai.prankChef=null;}return;}if(p.grounded&&Math.hypot(c.x-p.p.x,c.z-p.p.z)<1.2){s.feign(p.id);return;}}
+   else if(p.feigning){s.jump(p.id,p.inputKey==='A'?'D':'A');p.ai.prankChef=null;return;}
   }
-  const target=s.players[p.ai.target];if((!target||target.dead)&&!p.ai.refilling&&!p.ai.food)return;
-  while(p.ai.path.length&&Math.hypot(p.p.x-p.ai.path[0].x,p.p.z-p.ai.path[0].z)<.8)p.ai.path.shift();
-  if(p.ai.food&&!p.ai.food.active){p.ai.food=null;p.ai.nextThink=0;p.ai.path=[];}const destination=p.ai.path[0]||p.ai.food?.p||(p.ai.refilling?p.ai.waterTarget:target?.p);if(!destination)return;const d=target?Math.hypot(target.p.x-p.p.x,target.p.z-p.p.z):Infinity;let heading=Math.atan2(-(destination.x-p.p.x),-(destination.z-p.p.z));
-  if(!p.ai.refilling&&d<3.4&&p.ai.seen&&s.time>=p.ai.nextJump){heading+=s.random()>.5?.6:-.6;}
-  p.yaw+=clamp(angleDelta(heading,p.yaw),-3.0*dt,3.0*dt);
-  if(p.inWater&&p.ai.food){s.swim(p.id);}else if(p.inWater&&p.ai.refilling){const center=p.ai.waterTarget,distance=Math.hypot(p.p.x-center.x,p.p.z-center.z);s.swim(p.id,distance>.55);}
-  else if(s.time>=p.ai.nextJump){s.jump(p.id,p.inputKey==='A'?'D':'A');p.ai.nextJump=s.time+.13+p.id*.035+s.random()*.045;}
-  if(!p.ai.refilling&&p.ai.seen&&d<25&&s.time>=p.ai.nextFire&&visible(s,p,target)){
-   const aim=botAimPoint(s,p,target),origin=s.muzzle(p),error=(s.random()-.5)*.09,tx=aim.x-origin.x,tz=aim.z-origin.z,ty=aim.y-origin.y;
-   const yaw=Math.atan2(-tx,-tz)+error,pitch=clamp(Math.atan2(ty,Math.hypot(tx,tz))+(s.random()-.5)*.06,-Math.PI/3,Math.PI/3);s.fire(p.id,{x:-Math.sin(yaw)*Math.cos(pitch),y:Math.sin(pitch),z:-Math.cos(yaw)*Math.cos(pitch)});p.ai.nextFire=s.time+BATTLE.fireInterval+s.random()*.18;
+  if(s.time>=(p.ai.nextRefillCheck||0)){p.ai.nextRefillCheck=s.time+1.2+s.random()*.8;if(p.water<BOT_RULES.refillThreshold+(s.random()-.5)*10)p.ai.refilling=true;if(p.water>=80)p.ai.refilling=false;}if(p.water<10)p.ai.refilling=true;
+  if(s.time>=p.ai.nextThink){p.ai.nextThink=s.time+BOT_RULES.thinkInterval;let nearest=null,seen=null,dist=Infinity,seenDist=Infinity;for(const q of s.players){if(q===p||q.dead)continue;const d=(q.p.x-p.p.x)**2+(q.p.z-p.p.z)**2;if(d<dist){dist=d;nearest=q;}if(d<seenDist&&visible(s,p,q)){seenDist=d;seen=q;}}
+   const player=s.players[0],playerLeads=s.ranking.find(q=>q.id===0)?.rank===1&&player.points>0;p.ai.playerLeads=playerLeads;if(playerLeads&&!player.dead&&seen&&Math.hypot(player.p.x-p.p.x,player.p.z-p.p.z)<12&&visible(s,p,player)&&s.random()<.18)seen=player;p.ai.target=(seen||nearest)?.id;p.ai.seen=!!seen;
+   p.ai.food=p.hp<BATTLE.hp?s.sashimi.filter(i=>i.active&&i.expires>s.time&&Math.hypot(i.p.x-p.p.x,i.p.z-p.p.z)<7).sort((a,b)=>Math.hypot(a.p.x-p.p.x,a.p.z-p.p.z)-Math.hypot(b.p.x-p.p.x,b.p.z-p.p.z))[0]:null;
+   p.ai.boost=s.time>=p.boostUntil?s.boosts.filter(i=>i.active&&Math.hypot(i.p.x-p.p.x,i.p.z-p.p.z)<6).sort((a,b)=>Math.hypot(a.p.x-p.p.x,a.p.z-p.p.z)-Math.hypot(b.p.x-p.p.x,b.p.z-p.p.z))[0]:null;
+   p.ai.waterTarget=s.puddles.reduce((best,w)=>Math.hypot(w.x-p.p.x,w.z-p.p.z)<Math.hypot(best.x-p.p.x,best.z-p.p.z)?w:best);
+   if(!p.ai.pointGoal||s.time>=(p.ai.nextPointGoal||0)||Math.hypot(p.ai.pointGoal.x-p.p.x,p.ai.pointGoal.z-p.p.z)<1){p.ai.pointGoal=this.nodes[Math.floor(s.random()*this.nodes.length)];p.ai.nextPointGoal=s.time+6;}
+   const prank=s.chefs.find(c=>c.id===p.ai.prankChef&&s.time<p.ai.prankUntil),q=s.players[p.ai.target];p.ai.goal=p.ai.food?.p||(p.ai.refilling?p.ai.waterTarget:prank?{x:prank.x,z:prank.z}:p.ai.boost?.p||(playerLeads?q?.p:p.ai.pointGoal));
+   if(p.ai.goal){p.ai.state=p.ai.refilling?'REFILL':prank?'PRANK':playerLeads?'CHASE':'SCORE';p.ai.path=s.obstacles.some(o=>segmentBox({x:p.p.x,y:.1,z:p.p.z},{x:p.ai.goal.x,y:.1,z:p.ai.goal.z},o,.65))?this.route(p.p,p.ai.goal):[];}
+  }
+  if(p.ai.food&&!p.ai.food.active){p.ai.food=null;p.ai.nextThink=0;p.ai.path=[];}if(p.ai.boost&&!p.ai.boost.active){p.ai.boost=null;p.ai.nextThink=0;p.ai.path=[];}
+  while(p.ai.path.length&&Math.hypot(p.p.x-p.ai.path[0].x,p.p.z-p.ai.path[0].z)<.7)p.ai.path.shift();const destination=p.ai.path[0]||p.ai.goal;if(!destination)return;
+  const heading=Math.atan2(-(destination.x-p.p.x),-(destination.z-p.p.z)),strength=movementStrength(p.water);p.yaw+=clamp(angleDelta(heading,p.yaw),-BOT_RULES.turnSpeed*strength*dt,BOT_RULES.turnSpeed*strength*dt);
+  p.ai.progressTime??=s.time;p.ai.progressPosition??={...p.p};if(s.time-p.ai.progressTime>1.5){if(Math.hypot(p.p.x-p.ai.progressPosition.x,p.p.z-p.ai.progressPosition.z)<.25&&!p.inWater){p.ai.path=this.route(p.p,p.ai.goal);p.ai.nextThink=s.time+.4;p.yaw+=(p.id%2?1:-1)*.9;p.ai.nextJump=s.time;}p.ai.progressPosition={...p.p};p.ai.progressTime=s.time;}
+  if(p.inWater&&p.ai.refilling){const w=p.ai.waterTarget;s.swim(p.id,Math.hypot(p.p.x-w.x,p.p.z-w.z)>.55);}
+  else if(p.inWater)s.swim(p.id);
+  else if(s.time>=p.ai.nextJump){s.jump(p.id,p.inputKey==='A'?'D':'A');p.ai.nextJump=s.time+BOT_RULES.jumpInterval+p.id*.035+s.random()*.08;}
+  const target=s.players[p.ai.target],d=target?Math.hypot(target.p.x-p.p.x,target.p.z-p.p.z):Infinity;
+  if(!p.ai.refilling&&p.ai.seen&&target&&!target.dead&&d<25&&s.time>=p.ai.nextFire&&visible(s,p,target)){
+   const aim=botAimPoint(s,p,target),origin=s.muzzle(p),error=(s.random()-.5)*BOT_RULES.aimError,tx=aim.x-origin.x,tz=aim.z-origin.z,ty=aim.y-origin.y;
+   const yaw=Math.atan2(-tx,-tz)+error,pitch=clamp(Math.atan2(ty,Math.hypot(tx,tz))+(s.random()-.5)*BOT_RULES.pitchError,-Math.PI/3,Math.PI/3);s.fire(p.id,{x:-Math.sin(yaw)*Math.cos(pitch),y:Math.sin(pitch),z:-Math.cos(yaw)*Math.cos(pitch)});p.ai.nextFire=s.time+(BATTLE.fireInterval+s.random()*.18)/BOT_RULES.attackRate;
   }
  }
 }

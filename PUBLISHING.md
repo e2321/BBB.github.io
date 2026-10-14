@@ -4,6 +4,10 @@
 
 実施済みのローカル確認結果は [docs/SUBMISSION_CHECK.md](docs/SUBMISSION_CHECK.md) に記録しています。
 
+## 既存の公開サイトへの反映
+
+公開URL：https://e2321.github.io/BBB.github.io/ （ユーザー提供）。既存の`BBB.github.io`リポジトリと`.github/workflows/pages.yml`を継続使用します。今回の変更のPush・デプロイは実行していません。更新する場合は、内容確認とユーザーの許可後に同じソースをコミット・Pushし、同じ手動ワークフローを実行します。新しいリポジトリや別ゲームを作る必要はありません。以下の新規公開手順は初回向けの資料です。
+
 ## 1. 公開前にローカルで確認
 
 Node.js 22.12以上を用意し、プロジェクトのフォルダーで実行します。
@@ -16,7 +20,7 @@ npm.cmd run test:pages
 npm.cmd run preview
 ```
 
-すでに依存パッケージが導入済みなら、最初の`npm.cmd ci`は省略できます。`preview`の表示URLを開き、モデル読み込み後、BBBのSTART、プロローグを選択してSTART、操作・音を確認してください。`test:pages`はEdgeを使ってルートとサブフォルダーの4通りの起動を自動検証します。通常のプレビューはHTTPです。実際のGitHub上のHTTPS確認は公開後に行います。
+すでに依存パッケージが導入済みなら、最初の`npm.cmd ci`は省略できます。`preview`の表示URLを開き、モデル読み込み後、BBBのSTART、プロローグを選択してSTART、操作・音を確認してください。`test:pages`はEdgeを使ってルートとサブフォルダーの6通りの起動を自動検証します。通常のプレビューはHTTPです。実際のGitHub上のHTTPS確認は公開後に行います。
 
 `vite.config.js`の`base: './'`により、リポジトリ名を変更しても生成物のJS・CSS・モデル・画像を相対URLで読み込めます。公開ページは末尾`/`付きURL、または`index.html`で開きます。
 
@@ -39,7 +43,7 @@ npm.cmd run preview
 4. Pages設定画面またはワークフローの`github-pages`環境に表示されたURLを開きます。
 5. HTTPS設定を確認します。標準の`github.io` URLはHTTPSで配信されます。設定に`Enforce HTTPS`がある場合は有効にします。
 
-通常の提出URL例：`https://ユーザー名.github.io/リポジトリ名/`。これは例です。実際に表示されたURLを提出してください。公開を手動実行する設定なので、ソースをPushしただけではこのワークフローは公開しません。今回、GitHubへのPushやPages設定変更は行っていません。
+通常の提出URL例：`https://ユーザー名.github.io/リポジトリ名/`。これは例です。実際に表示されたURLを提出してください。公開を手動実行する設定なので、ソースをPushしただけではこのワークフローは公開しません。今回の変更についてGitHubへのPushやPages設定変更は行っていません。
 
 ## 4. 公開後の提出確認
 

@@ -1,12 +1,12 @@
 // Height and horizontal travel are independently tunable; frequency preserves the apex.
 export const BATTLE={duration:90,size:30,players:4,hp:5,fishLength:1.5,bodyRadius:.27,bodyHalfLength:.46,bodyY:.28,jumpDuration:.5,jumpHeight:1.05,spaceJumpHeight:1.05,jumpDistance:1.2,jumpSpeed:8.4,gravity:33.6,walkSpeed:2.4,buffer:.4,fireInterval:.6,knifeSpeed:14,knifeRadius:.065,respawn:5,invincible:1};
-export const FLOP_RULES={landingPoints:10,jumpWaterCost:1,comboWindow:1.5,absorbRate:.10,waterRecovery:5,minStrength:.60,maxAcceleration:1,accelerationDecay:.55,maxFrequencyMultiplier:2.1,inputMinInterval:.06,swimSpeed:3.2,waterHysteresis:.07};
+export const FLOP_RULES={landingPoints:10,jumpWaterCost:2,spaceWaterCost:3,comboWindow:1.5,absorbRate:.10,waterRecovery:5,minStrength:.25,maxAcceleration:1,accelerationDecay:.55,maxFrequencyMultiplier:2.1,inputMinInterval:.06,swimSpeed:3.2,waterHysteresis:.07};
 export const ACCENTS=['#658fb1','#b16b64','#7f9c73','#b8a270'];
 export const PUDDLES=[{x:-6,z:-2,radius:1.55},{x:6,z:-2,radius:1.55},{x:3,z:6,radius:1.55}];
-export const WATER_STRENGTH_CURVE=[[0,FLOP_RULES.minStrength],[10,.75],[20,.85],[30,.90],[50,.95],[75,.98],[100,1]];
-export function movementStrength(water){
+export const JUMP_STRENGTH_CURVE=[[0,.60],[10,.75],[20,.85],[30,.90],[50,.95],[75,.98],[100,1]];
+function interpolateStrength(water,curve){
  const value=clamp(water,0,100);
- for(let i=1;i<WATER_STRENGTH_CURVE.length;i++){const [low,a]=WATER_STRENGTH_CURVE[i-1],[high,b]=WATER_STRENGTH_CURVE[i];if(value<=high){const t=(value-low)/(high-low),smooth=t*t*(3-2*t);return a+(b-a)*smooth;}}
+ for(let i=1;i<curve.length;i++){const [low,a]=curve[i-1],[high,b]=curve[i];if(value<=high){const t=(value-low)/(high-low),smooth=t*t*(3-2*t);return a+(b-a)*smooth;}}
  return 1;
 }
 const obstacle=(id,x,z,sx,sz,height)=>({id,min:{x:x-sx/2,y:0,z:z-sz/2},max:{x:x+sx/2,y:height,z:z+sz/2}});
@@ -27,3 +27,12 @@ export function segmentDistanceSq(a,b,c,d){
 export function puddleRadius(w,angle){return w.radius*(1+.085*Math.sin(angle*3+w.x)+.055*Math.cos(angle*5+w.z));}
 
 export const comboMultiplier=combo=>combo>=30?3:combo>=20?2.5:combo>=10?2:combo>=5?1.5:1;
+
+export const WATER_STRENGTH_CURVE=[[0,.25],[15,.45],[30,.65],[50,.85],[70,1],[100,1]];
+export const movementStrength=water=>interpolateStrength(water,WATER_STRENGTH_CURVE);
+export const jumpStrength=water=>interpolateStrength(water,JUMP_STRENGTH_CURVE);
+export const WATER_COST_TIERS=[[10,6],[7,5],[5,4],[3,3],[1,2]];
+export const flopWaterCost=combo=>WATER_COST_TIERS.find(([minimum])=>combo>=minimum)?.[1]??FLOP_RULES.jumpWaterCost;
+export const BOOST_RULES={multiplier:1.5,duration:8,respawn:15,radius:.75};
+export const BOT_RULES={accelerationEfficiency:.8,scoreEfficiency:.825,thinkInterval:.28,attackRate:.75,aimError:.22,pitchError:.15,jumpInterval:.20,turnSpeed:2.6,refillThreshold:35};
+export const FEIGN_RULES={idle:.8,noticeDistance:5,approachTimeout:6,inspectDistance:1.3,inspection:.6,unguarded:1.4,releaseWindow:.8,bonusDistance:1.8,bonus:500,cooldown:20,stun:3};

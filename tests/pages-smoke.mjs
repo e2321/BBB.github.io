@@ -20,14 +20,14 @@ let browser;
 try{
  browser=await chromium.launch({...(process.platform==='win32'?{channel:'msedge'}:{}),headless:true,args:['--use-angle=swiftshader','--enable-webgl']});
  await mkdir('tests/screenshots',{recursive:true});
- for(const mount of ['/',prefix])for(const mode of ['PROLOGUE','BBB']){
+ for(const mount of ['/',prefix])for(const mode of ['PROLOGUE','BBB','KITCHEN']){
   const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[],failures=[],requests=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)failures.push(`${r.status()} ${r.url()}`);});page.on('requestfailed',r=>failures.push(`${r.failure()?.errorText} ${r.url()}`));page.on('request',r=>requests.push(r.url()));
   await page.goto(`${origin}${mount}${mount==='/'?'':'index.html'}`);await page.locator('#quality').selectOption('LOW');await page.waitForFunction(()=>!document.querySelector('#start').disabled,null,{timeout:180000});
   assert.equal(await page.evaluate(()=>typeof window.__game),'undefined','Development hook shipped');
-  if(mode==='PROLOGUE')await page.locator('#prologueMode').click();await page.locator('#start').click();if(mode==='PROLOGUE')await page.keyboard.press('Escape');
-  assert.equal(await page.locator(mode==='BBB'?'#battleHUD':'#hud').isVisible(),true);assert.equal(await page.locator('#overlay').isVisible(),false);
-  if(mode==='BBB'){await page.keyboard.press('Space');await page.waitForFunction(()=>document.querySelector('#battleRankingRows .ranking-self').textContent.includes('10 BP'),null,{timeout:15000});await page.keyboard.press('v');await page.keyboard.press('v');await page.mouse.click(640,400);assert.equal(await page.locator('#battleRankingRows div').count(),4);}
+  if(mode==='PROLOGUE')await page.locator('#prologueMode').click();if(mode==='KITCHEN')await page.locator('#battleStageKitchen').click();await page.locator('#start').click();if(mode==='PROLOGUE')await page.keyboard.press('Escape');
+  assert.equal(await page.locator(mode!=='PROLOGUE'?'#battleHUD':'#hud').isVisible(),true);assert.equal(await page.locator('#overlay').isVisible(),false);
+  if(mode!=='PROLOGUE'){await page.keyboard.press('Space');await page.waitForFunction(()=>document.querySelector('#battleRankingRows .ranking-self').textContent.includes('10 BP'),null,{timeout:15000});await page.keyboard.press('v');await page.keyboard.press('v');await page.mouse.click(640,400);assert.equal(await page.locator('#battleRankingRows div').count(),4);}
   else{await page.keyboard.press('a');await page.waitForTimeout(350);await page.keyboard.press('d');await page.waitForFunction(()=>parseInt(document.querySelector('#waterText').textContent)<100);}
   assert.equal(await page.evaluate(()=>document.getElementById('world').getContext('webgl2').isContextLost()),false);await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   await page.screenshot({path:`tests/screenshots/pages-${mount==='/'?'root':'subpath'}-${mode.toLowerCase()}.png`});
@@ -35,5 +35,5 @@ try{
   for(const name of ['madai.glb','chef.glb'])assert.ok(requests.some(url=>url.endsWith(`/assets/models/${name}`)),`Model never requested: ${name}`);
   assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);results.push({path:mount,mode,modelReady:true,started:true,webgl:true,localAssetsOnly:true,debugHook:false,errors,failures});await page.close();
  }
- const report={build,checks:results,unverified:['GitHub Actions execution and public github.io HTTPS URL (not published)']};await writeFile('tests/pages-smoke-results.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));
+ const report={build,checks:results,unverified:['GitHub Actions execution and public github.io HTTPS URL for these changes (not deployed)']};await writeFile('tests/pages-smoke-results.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
