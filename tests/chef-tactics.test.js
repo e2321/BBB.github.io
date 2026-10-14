@@ -38,10 +38,10 @@ test('chef attacks have a visible windup, one damage and a cooldown; jump, retre
   advance(s,.36);assert.equal(p.hp,scenario==='hit'?BATTLE.hp-1:BATTLE.hp,scenario);if(scenario==='hit'){assert.ok(s.time-c.lastThrow<1/60);advance(s,2);assert.equal(p.hp,BATTLE.hp-1);}
  }
 });
-test('chef deaths use existing sashimi and unlimited five-second respawns without BP theft',()=>{
+test('chef deaths use existing sashimi and unlimited four-second respawns without BP theft',()=>{
  const s=game(),c=s.chefs[0],p=s.players[0];s.updateFeign=()=>{};p.p={x:c.x,y:.28,z:c.z+1};p.points=1800;p.hp=1;c.nextAttack=0;advance(s,.8);
  assert.equal(p.dead,true);assert.equal(p.hp,0);assert.equal(p.points,1800);assert.equal(s.sashimi.length,1);assert.equal(s.events.filter(e=>e.type==='kill').length,1);assert.equal(s.events.find(e=>e.type==='kill').killer,null);
- advance(s,5);assert.equal(p.dead,false);assert.equal(p.hp,BATTLE.hp);assert.equal(p.water,100);assert.equal(p.points,1800);assert.equal(s.ranking.length,4);
+ advance(s,4);assert.equal(p.dead,false);assert.equal(p.hp,BATTLE.hp);assert.equal(p.water,100);assert.equal(p.points,1800);assert.equal(s.ranking.length,4);
 });
 test('feigning before a committed strike leads to inspection and can safely outlast its bonus window',()=>{
  const s=game(),c=s.chefs[0],p=s.players[0];p.p={x:c.x,y:.28,z:c.z+1};c.nextAttack=0;s.step();assert.equal(c.state,'ATTACKING');s.feign(0);advance(s,3);
