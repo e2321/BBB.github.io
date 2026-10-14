@@ -1,5 +1,7 @@
 # 厨房・バランス調整の実装記録
 
+この文書は前回の実装記録です。水分消費・CPU・コック・開始演出の最新仕様は [CHEF_TACTICS_AND_BALANCE.md](CHEF_TACTICS_AND_BALANCE.md) を参照してください。
+
 既存ゲームへ差分を統合しました。修正前のソースは `backups/before-kitchen-balance/` に保存しています。
 
 ## 主な変更

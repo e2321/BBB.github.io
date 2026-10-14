@@ -6,7 +6,7 @@
 
 ## 既存の公開サイトへの反映
 
-公開URL：https://e2321.github.io/BBB.github.io/ （ユーザー提供）。既存の`BBB.github.io`リポジトリと`.github/workflows/pages.yml`を継続使用します。今回の変更のPush・デプロイは実行していません。更新する場合は、内容確認とユーザーの許可後に同じソースをコミット・Pushし、同じ手動ワークフローを実行します。新しいリポジトリや別ゲームを作る必要はありません。以下の新規公開手順は初回向けの資料です。
+公開URL：https://e2321.github.io/BBB.github.io/ （ユーザー提供）。既存の`BBB.github.io`リポジトリと`.github/workflows/pages.yml`を継続使用します。今回の変更のPush・デプロイは実行していません。ユーザーの確認後にmainへPushすると、同じワークフローが自動でビルド・公開します。手動実行も可能です。新しいリポジトリや別ゲームを作る必要はありません。以下の新規公開手順は初回向けの資料です。
 
 ## 1. 公開前にローカルで確認
 
@@ -43,7 +43,7 @@ npm.cmd run preview
 4. Pages設定画面またはワークフローの`github-pages`環境に表示されたURLを開きます。
 5. HTTPS設定を確認します。標準の`github.io` URLはHTTPSで配信されます。設定に`Enforce HTTPS`がある場合は有効にします。
 
-通常の提出URL例：`https://ユーザー名.github.io/リポジトリ名/`。これは例です。実際に表示されたURLを提出してください。公開を手動実行する設定なので、ソースをPushしただけではこのワークフローは公開しません。今回の変更についてGitHubへのPushやPages設定変更は行っていません。
+通常の提出URL例：`https://ユーザー名.github.io/リポジトリ名/`。これは例です。実際に表示されたURLを提出してください。現在はmainへのPushで自動公開する設定です。今回のゲーム修正のPushやPages設定変更は行っていません。
 
 ## 4. 公開後の提出確認
 
@@ -58,9 +58,9 @@ npm.cmd run preview
 
 ## 5. 公開後も同じソースで更新
 
-通常どおり`npm.cmd run dev`で開発し、テスト後にソースをコミット・Pushします。続けてActionsの同じワークフローを手動実行すると、同じ公開URLが更新されます。`dist/`を直接編集せず、ソースを直してビルドしてください。
+通常どおり`npm.cmd run dev`で開発し、テスト後にソースをコミット・Pushします。mainへのPushで自動デプロイされ、同じ公開URLが更新されます。`dist/`を直接編集せず、ソースを直してビルドしてください。
 
-自動公開を選びたい場合だけ、`.github/workflows/pages.yml`のコメントになっている`push`と`branches: [main]`を有効化します。使用ブランチが`main`以外ならその名前に変更してください。これ以降、そのブランチへのPushは公開を伴います。
+`.github/workflows/pages.yml`は`push: branches: [main]`と`workflow_dispatch`の両方が有効です。GitHubへのPushは公開を伴うため、実行前にユーザーへ確認してください。
 
 ## 公開されるファイル
 

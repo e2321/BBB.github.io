@@ -10,7 +10,7 @@ export class WetAudio{
  play(kind,{position=null,speed=2.8,local=true,comboStage=0}={}){
   const c=this.context;if(!this.enabled||!c||c.state!=='running')return false;
   if(!local&&position&&Math.hypot(position.x-this.listenerPosition.x,position.z-this.listenerPosition.z)>28)return false;
-  const landing=['land','dry','light','heavy','fast'].includes(kind),priority=['comboUp','comboSuper'].includes(kind)?(local?3.5:2.5):kind==='comboBass'?(local?3:1.5):landing?(local?3:2):['win','lose','warning','fanfare','leader'].includes(kind)?2.5:kind==='stroke'?1:.5;
+  const landing=['land','dry','light','heavy','fast'].includes(kind),priority=['countdown','matchStart','chefFail','chefBonus','chefSurprise','comboUp','comboSuper'].includes(kind)?(local?3.5:2.5):kind==='comboBass'?(local?3:1.5):landing?(local?3:2):['win','lose','warning','fanfare','leader'].includes(kind)?2.5:kind==='stroke'?1:.5;
   if(this.voices.length>=8){const old=this.voices.reduce((best,v)=>v.priority<best.priority?v:best);if(priority<old.priority)return false;this.release(old);}
   const variants=this.buffers[kind];if(!variants)return false;let index=Math.floor(Math.random()*variants.length);if(kind!=='stroke'&&index===this.lastVariant)index=(index+1)%variants.length;if(kind!=='stroke')this.lastVariant=index;
   const source=c.createBufferSource(),gain=c.createGain();source.buffer=variants[index];source.playbackRate.value=.95+Math.random()*.10;gain.gain.value=(EFFECT_GAINS[kind]??(kind!=='stroke'?clamp(speed/2.8,.32,1.12):.19))*(.93+Math.random()*.14)*(landing?1+clamp(comboStage,0,4)*.075:1);source.connect(gain);let panner;
