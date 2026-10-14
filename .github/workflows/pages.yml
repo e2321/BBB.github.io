@@ -1,11 +1,10 @@
 name: Publish game to GitHub Pages
 
-# Publication is explicitly started by the repository owner.
+# Publish on main updates; manual publication remains available.
 on:
   workflow_dispatch:
-  # Optional after your first successful publication:
-  # push:
-  #   branches: [main]
+  push:
+    branches: [main]
 
 permissions:
   contents: read
