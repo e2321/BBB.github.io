@@ -42,3 +42,5 @@ export const KITCHEN_BOT_RULES={leaderTargetChance:.28,escapeDistance:3.5};
 export const COUNTDOWN_RULES={duration:3,flopPeriod:.42,flopHeight:.18,botPeriod:.7,startDisplay:.65};
 
 export const HEART_RULES={heal:1,respawn:15,radius:.75,heightTolerance:.7};
+
+export const RAINBOW_LANDING_BP=50;
