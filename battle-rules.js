@@ -15,7 +15,7 @@ export const ARENA_WALLS=[obstacle('west',-15.25,0,.5,31,3),obstacle('east',15.2
 export const SPAWNS=[[-12,-12],[12,12],[-12,12],[12,-12],[0,-7],[0,7],[-11,0],[11,0]].map(([x,z])=>({x,y:BATTLE.bodyY,z}));
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export const angleDelta=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
-export function standings(players){const sorted=players.map(p=>({id:p.id,name:p.name,points:p.points,bot:p.bot})).sort((a,b)=>b.points-a.points||a.id-b.id);return sorted.map(p=>({...p,rank:1+sorted.filter(q=>q.points>p.points).length,winner:p.points===sorted[0].points}));}
+export function standings(players){const sorted=players.filter(p=>!p.spectator).map(p=>({id:p.id,name:p.name,points:p.points,bot:p.bot})).sort((a,b)=>b.points-a.points||a.id-b.id);return sorted.map(p=>({...p,rank:1+sorted.filter(q=>q.points>p.points).length,winner:p.points===sorted[0].points}));}
 // Closest distance between two 3D segments, including nearly parallel segments.
 export function segmentDistanceSq(a,b,c,d){
  const u={x:b.x-a.x,y:b.y-a.y,z:b.z-a.z},v={x:d.x-c.x,y:d.y-c.y,z:d.z-c.z},w={x:a.x-c.x,y:a.y-c.y,z:a.z-c.z};const dot=(a,b)=>a.x*b.x+a.y*b.y+a.z*b.z;
