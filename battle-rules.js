@@ -41,7 +41,6 @@ export const CHEF_RULES={noticeDistance:7,chaseDistance:10,patrolSpeed:.7,chaseS
 export const KITCHEN_BOT_RULES={leaderTargetChance:.28,escapeDistance:3.5};
 export const COUNTDOWN_RULES={duration:3,flopPeriod:.42,flopHeight:.18,botPeriod:.7,startDisplay:.65};
 
-export const HEART_RULES={heal:1,respawn:15,radius:.75,heightTolerance:.7};
 
 export const RAINBOW_LANDING_BP=50;
 
@@ -52,10 +51,12 @@ export const DEFAULT_MAX_HP=3;
 export const validMaxHP=n=>typeof n==='number'&&Number.isInteger(n)&&n>=1&&n<=4;
 export const maxHPValue=n=>validMaxHP(n)?n:DEFAULT_MAX_HP;
 export const RAINBOW_WATER_COST_MULTIPLIER=.5;
-export const RAINBOW_WATER_BONUS=50;
+export const RAINBOW_WATER_BONUS=20;
 export const BP_AREA_MULTIPLIER=2;
 export const WALL_FARM_RULES={seconds:2,minMovement:.025,releaseDistance:.08};
 export const BOT_COMBO_RULES={continueChance:.9,centerChance:.72,refillThreshold:25};
 export const BOT_CLOSE_AIM={distance:5,reaction:.22,turnSpeed:2.1,yawError:.65,pitchError:.22};
 
 export const BOT_DODGE_RULES={lookAhead:.45,radius:.65,duration:.6,distance:2.2};
+
+export const RAINBOW_AREA_BP=70;

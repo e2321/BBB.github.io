@@ -29,3 +29,8 @@ h1 span{color:#f6c57e}.subtitle{color:#e9ca94;letter-spacing:.1em}
 @media(prefers-reduced-motion:reduce){#start,#modeSelect button,.battle-stage{transition:none}}
 
 .settings{flex-wrap:wrap;max-width:calc(100vw - 30px)}#onlineMaxHP{margin:.5em;padding:.4em;background:#244047;color:#fff;border:1px solid #96b7ab;border-radius:4px}
+
+/* Keep the existing controls above the home backdrop and within its visibility. */
+#overlay > .settings{z-index:12;pointer-events:auto}
+
+#overlay:has(#onlineLobby:not([hidden])) #homeLifeSetting{display:none}
