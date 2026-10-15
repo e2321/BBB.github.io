@@ -1,17 +1,18 @@
-import {TUTORIAL_ROUTE} from '../tutorial-controller.js';
-export function runTutorial(sim,controller,{maxSteps=18000,onStep=()=>{},reactionDelay=0,inputInterval=.28}={}){
- let key='A',next=sim.time,routeIndex=0,trackedPhase=controller.phase,readyAt=sim.time+reactionDelay;
+// Automated learner: uses real simulation inputs and the existing view-switch callback.
+export function runTutorial(sim,c,{maxSteps=18000,onStep=()=>{},reactionDelay=0,inputInterval=.52}={}){
+ let key='A',next=0,phase=c.phase,ready=sim.time+reactionDelay;
  for(let i=0;i<maxSteps&&sim.state==='PLAYING';i++){
-  const p=sim.players[0],phase=controller.phase;
-  if(phase!==trackedPhase){trackedPhase=phase;readyAt=sim.time+reactionDelay;}if(sim.time<readyAt){sim.step();controller.consume(sim.events);sim.events.length=0;onStep(sim,controller,i);continue;}
-  if(phase===0&&sim.time>=next){sim.jump(0,key);key=key==='A'?'D':'A';next=sim.time+.5;}
-  if(phase===1){if(!controller.jumped&&p.grounded)sim.jump(0,'Space');if(!controller.hit){const origin=sim.muzzle(p),t=sim.stage.target;sim.fire(0,{x:(t.min.x+t.max.x)/2-origin.x,y:(t.min.y+t.max.y)/2-origin.y,z:(t.min.z+t.max.z)/2-origin.z});}}
-  if(phase===2){if(!controller.feignPracticed){if(p.feigning)sim.jump(0,'Space');}else{
-   let [x,z]=TUTORIAL_ROUTE[routeIndex];if(Math.hypot(p.p.x-x,p.p.z-z)<.7&&p.grounded&&routeIndex<TUTORIAL_ROUTE.length-1){routeIndex++;[x,z]=TUTORIAL_ROUTE[routeIndex];}
-   const yaw=Math.atan2(p.p.x-x+p.v.x*.32,p.p.z-z+p.v.z*.32);sim.aim(0,yaw,0);
-   if(p.grounded&&sim.time>=next){sim.jump(0,key);key=key==='A'?'D':'A';next=sim.time+inputInterval;}
-  }}
-  sim.step();controller.consume(sim.events);sim.events.length=0;onStep(sim,controller,i);
+  c.beforeStep();const p=sim.players[0];if(phase!==c.phase){phase=c.phase;ready=sim.time+reactionDelay;next=sim.time;}
+  if(sim.time>=ready){
+   const moveTo=target=>{sim.aim(0,Math.atan2(p.p.x-target.x+p.v.x*.2,p.p.z-target.z+p.v.z*.2),0);if(p.inWater)sim.swim(0);else if(p.grounded&&sim.time>=next){sim.jump(0,key);key=key==='A'?'D':'A';next=sim.time+inputInterval;}};
+   const shoot=target=>{const o=sim.muzzle(p);sim.fire(0,{x:target.x-o.x,y:target.y-o.y,z:target.z-o.z});};
+   if(c.phase===0||c.phase===5){sim.aim(0,0,0);if(p.grounded&&sim.time>=next){sim.jump(0,key);key=key==='A'?'D':'A';next=sim.time+inputInterval;}}
+   if(c.phase===1){if(p.inWater)sim.swim(0,false);else moveTo(sim.puddles[0]);}
+   if(c.phase===2){if(!c.blockedTried){if(p.inWater){sim.fire(0);c.blockedAttack();}else moveTo(sim.puddles[0]);}else if(p.inWater)moveTo(sim.stage.practiceStart);else shoot({x:p.p.x,y:p.p.y,z:p.p.z-3});}
+   if(c.phase===3){if(!c.tpsShot){c.setView('TPS');shoot(sim.players[1].p);}else if(!c.fpsSeen)c.setView('FPS');else if(!c.fpsHit){c.setView('FPS');shoot(sim.players[1].p);}else c.setView('TPS');}
+   if(phase===4&&p.grounded)sim.jump(0,'Space');
+  }
+  sim.step();c.consume(sim.events);sim.events.length=0;onStep(sim,c,i);
  }
- return {state:sim.state,complete:controller.complete,time:sim.time,phase:controller.phase,flops:controller.flops,jumped:controller.jumped,hit:controller.hit,feignPracticed:controller.feignPracticed,routeIndex,p:{...sim.players[0].p},hp:sim.players[0].hp,phases:[...controller.times]};
+ return {state:sim.state,complete:c.complete,time:sim.time,phase:c.phase,flops:c.flops,recovered:c.recovered,blocked:c.blockedTried,outside:c.outsideShot,tps:c.tpsShot,fps:c.fpsSeen,fpsHit:c.fpsHit,jumped:c.jumped,challengeBP:c.challengeBP,combo:c.adCombo,kills:sim.players[0].kills,hp:sim.players[0].hp,phases:[...c.times]};
 }

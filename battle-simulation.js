@@ -38,7 +38,7 @@ export class BattleSimulation{
   if(p.combo===50)this.emit('rainbow',{id:p.id,p:{...p.p}});this.emit('score',{id:p.id,delta,total:p.points,combo:p.combo,multiplier:p.multiplier,multiplierUp:p.multiplier>oldMultiplier,p:{...p.p}});return true;
  }
  muzzle(p){return {x:p.p.x+Math.cos(p.yaw)*.35,y:p.p.y+.10,z:p.p.z-Math.sin(p.yaw)*.35};}
- fire(id,direction=null){const p=this.players[id];if(this.state!=='PLAYING'||!p||p.dead||p.feigning||this.time+1e-7<p.nextFire||this.stage.id!=='tutorial'&&this.waterAt(p.p,p.inWater))return false;const k=this.projectiles.find(k=>!k.active);if(!k)return false;const d=direction||{x:-Math.sin(p.yaw)*Math.cos(p.pitch),y:Math.sin(p.pitch),z:-Math.cos(p.yaw)*Math.cos(p.pitch)},length=Math.hypot(d.x,d.y,d.z);if(!Number.isFinite(length)||length<.01)return false;
+ fire(id,direction=null){const p=this.players[id];if(this.state!=='PLAYING'||!p||p.dead||p.feigning||this.time+1e-7<p.nextFire||this.waterAt(p.p,p.inWater))return false;const k=this.projectiles.find(k=>!k.active);if(!k)return false;const d=direction||{x:-Math.sin(p.yaw)*Math.cos(p.pitch),y:Math.sin(p.pitch),z:-Math.cos(p.yaw)*Math.cos(p.pitch)},length=Math.hypot(d.x,d.y,d.z);if(!Number.isFinite(length)||length<.01)return false;
   p.nextFire=this.time+BATTLE.fireInterval;p.invUntil=this.time;const origin=this.muzzle(p);Object.assign(k.p,origin);Object.assign(k.prev,origin);k.v.x=d.x/length*BATTLE.knifeSpeed;k.v.y=d.y/length*BATTLE.knifeSpeed;k.v.z=d.z/length*BATTLE.knifeSpeed;k.owner=id;k.life=3;k.angle=0;k.stuck=0;k.active=true;this.emit('shoot',{id,p:origin});return true;
  }
  bodyCollision(p){for(let iteration=0;iteration<3;iteration++)for(const along of [-BATTLE.bodyHalfLength,0,BATTLE.bodyHalfLength]){
