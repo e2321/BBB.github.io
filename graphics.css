@@ -1,0 +1,29 @@
+/* Service kitchen / fish-market art direction. No full-screen animated opacity. */
+:root{--gold:#f1c17c;--art-ink:#112e35;--art-cream:#f4ecda;--art-aqua:#80d3ce}
+#overlay{background:linear-gradient(90deg,#091f2aef 0%,#102e37cc 44%,#102c3440 80%,#102c3470);gap:4vw}
+#overlay .titlecard{padding:24px 0 24px 24px;border-left:3px solid #f1c17c;max-width:650px}
+.eyebrow{color:#8bc9c4;letter-spacing:.28em;font-weight:800}
+h1{font-weight:950;letter-spacing:-.055em;text-shadow:0 4px 0 #0b2028,0 12px 35px #0005}
+h1 span{color:#f6c57e}.subtitle{color:#e9ca94;letter-spacing:.1em}
+#modeSelect button,.battle-stage{transition:border-color .15s,background-color .15s;box-shadow:inset 0 1px #ffffff15}
+#modeSelect button.selected,.battle-stage.selected{background:#3d5954;border-color:#f1c17c;color:#fff3d7}
+#start{background:linear-gradient(135deg,#f5d196,#dfab61);box-shadow:0 6px 0 #8a693d,0 15px 30px #0004;border-radius:4px;letter-spacing:.15em}
+#start:hover{background:#ffe3af}#start:active{transform:translateY(2px);box-shadow:0 3px 0 #8a693d}
+#characterPanel{background:#f0e8d9f5;color:#15383f;border:1px solid #fff2d1;border-radius:5px;box-shadow:0 20px 50px #031b2640;padding:24px}
+#characterPanel h2{letter-spacing:.08em;font-size:20px}#characterPanel p,#characterPanel small{color:#486569}
+#characterCards button{background:#183942;border-color:#96aaa5;border-radius:4px;color:#f1ede1;padding:7px 7px 12px}
+#characterCards button.selected{background:#2f514f;border-color:#c18d42;box-shadow:0 0 0 2px #f1cc8b}
+#characterCards canvas{border-radius:2px}#characterCards strong{letter-spacing:.2em}.model-quality{border-color:#254b4930}.model-quality select{background:#20434a;color:#fff0d0}
+.panel,#battleVital,#battleRanking,#battleCombo{background:linear-gradient(135deg,#12323def,#173f45ec);border-color:#b1c4ba55;border-radius:5px;box-shadow:0 5px 18px #071e2930,inset 0 1px #e8f6ed16}
+#battleWater{background:#102c35f2;border:1px solid #9cd1cb88;border-top:3px solid #b8ddd2;border-radius:6px;box-shadow:0 8px 24px #001c2840}
+#battleWater .water{height:15px;border-radius:3px;background:#061e2a;box-shadow:inset 0 2px 4px #0005}
+#battleWater .water i{background:linear-gradient(90deg,#2694ad,#76dbd0,#d3f6dc);border-radius:2px}
+#battleWater .water.low i{background:linear-gradient(90deg,#b13f2f,#ff9d62)}
+#battleRanking th,#battleRanking td{border-bottom:1px solid #acc2bd20;padding-top:7px;padding-bottom:7px}
+#battleResults{background:linear-gradient(135deg,#0c2934f7,#163b41f5)}#battleResults h2{color:#f4d397;letter-spacing:.06em}
+#battleResultRows tr{border-bottom:1px solid #c3d3c02a}#battleResultRows td{padding:12px 16px}#battleResultRows .winner{color:#ffdb96;background:#cfab5920}
+#battleStageBadge{letter-spacing:.15em;color:#f4e8cf;padding:5px 16px;border-bottom:1px solid #f1c17c99}
+.battle-pitch{border-left-color:#efc07d;background:#c9e6da09}#battleCountdownValue{color:#ffdc9b;text-shadow:0 5px #173840,0 12px 30px #041b24}
+#onlineMenu{background:#153b42ef;border-color:#96b7ab;border-radius:5px}#onlineRoomCode{color:#ffd494}
+@media(max-width:700px){#overlay .titlecard{padding-left:15px}#characterPanel{padding:16px}#battleResultRows td{padding:8px}}
+@media(prefers-reduced-motion:reduce){#start,#modeSelect button,.battle-stage{transition:none}}

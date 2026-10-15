@@ -1,0 +1,11 @@
+import * as THREE from 'three';
+export const ART_QUALITY=Object.freeze({low:{texture:128,segments:4,shadow:0,props:1,sparks:.5},medium:{texture:256,segments:8,shadow:1024,props:2,sparks:1},high:{texture:512,segments:12,shadow:2048,props:3,sparks:1.25}});
+const noise=(x,y)=>{let n=Math.imul(x+91,374761393)^Math.imul(y+47,668265263);n=Math.imul(n^(n>>>13),1274126177);return ((n^(n>>>16))>>>0)/4294967295;};
+// Deterministic, local textures: no network dependency and no gameplay random calls.
+export function surfaceTexture(kind,size=256){const data=new Uint8Array(size*size*4);for(let y=0;y<size;y++)for(let x=0;x<size;x++){const i=(y*size+x)*4,n=noise(x,y),u=x/size,v=y/size;let r,g,b,a=255;
+ if(kind==='shadow'){const d=Math.hypot((u-.5)*2,(v-.5)*2);r=g=b=20;a=Math.round(Math.max(0,1-d)**2*180);}
+ else if(kind==='steel'){const brush=.86+.1*noise(0,y)+.025*Math.sin(y*1.7)+n*.025;r=196*brush;g=207*brush;b=207*brush;}
+ else if(kind==='water'){const wave=.5+.22*Math.sin(u*35+Math.sin(v*17)*2)+.14*Math.sin(v*47-u*15);r=90+wave*85;g=155+wave*65;b=181+wave*60;}
+ else{const cell=size/4,grout=x%cell<1.5||y%cell<1.5,variation=noise(Math.floor(x/cell),Math.floor(y/cell));if(kind==='wall'){r=grout?119:210+variation*18;g=grout?142:222+variation*12;b=grout?141:206+variation*13;}else{r=grout?30:62+variation*13+n*4;g=grout?37:74+variation*13+n*4;b=grout?38:75+variation*13+n*4;}}
+ data[i]=r;data[i+1]=g;data[i+2]=b;data[i+3]=a;}const tex=new THREE.DataTexture(data,size,size,THREE.RGBAFormat);tex.colorSpace=THREE.SRGBColorSpace;tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.magFilter=THREE.LinearFilter;tex.minFilter=THREE.LinearMipmapLinearFilter;tex.generateMipmaps=true;tex.anisotropy=4;tex.needsUpdate=true;return tex;}
+export function signTexture(title,subtitle='',accent='#f4c37d',width=1024){const c=document.createElement('canvas');c.width=width;c.height=width/4;const ctx=c.getContext('2d');ctx.scale(width/1024,width/1024);ctx.fillStyle='#142f36';ctx.fillRect(0,0,1024,256);ctx.fillStyle=accent;ctx.fillRect(0,0,16,256);ctx.fillRect(1008,0,16,256);ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='900 82px system-ui';ctx.fillText(title,512,101,920);ctx.font='500 26px system-ui';ctx.fillStyle='#c9dad7';ctx.fillText(subtitle,512,190,920);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;}

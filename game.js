@@ -17,10 +17,11 @@ import {WetAudio} from './wet-audio.js';
 import {OnlineFriends} from './online-client.js';
 import {OnlineBattleMode} from './online-view.js';
 import './style.css';
+import './graphics.css';
 function arenaMode(){return ['BATTLE','TUTORIAL','ONLINE'].includes(selectedMode);}
 
 const $=id=>document.getElementById(id),canvas=$('world'),sim=new Simulation();
-let renderer;try{renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});}catch(e){$('message').textContent='WebGLを利用できません。ハードウェアアクセラレーションを有効にしてください。';throw e;}
+let renderer;try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});}catch(e){$('message').textContent='WebGLを利用できません。ハードウェアアクセラレーションを有効にしてください。';throw e;}
 renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.94;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(55,1,.025,85),effects=new Effects(scene);
 const drawingSize=new DrawingBufferSize(renderer,camera),frameLoop=new SingleFrameLoop(frame),renderHealth={contextLost:0,contextRestored:0,gameDraws:0};
@@ -37,7 +38,7 @@ let soundOn=true;
 const formatTime=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${(t%60).toFixed(1).padStart(4,'0')}`;
 function sound(type){if(type==='jump')audio.play('stroke');else if(type==='land')audio.play('land');else audio.tone(type);}
 function resize(){const q=$('quality').value,maxPixels=q==='HIGH'?1440000:q==='MEDIUM'?921600:640000;drawingSize.request(innerWidth,innerHeight,Math.min(devicePixelRatio,q==='HIGH'?1.25:q==='MEDIUM'?1:.8)*Math.min(1,Math.sqrt(maxPixels/(innerWidth*innerHeight)))*adaptiveScale);}
-function quality(){const q=$('quality').value;renderer.shadowMap.enabled=q!=='LOW';renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;world.key.shadow.mapSize.setScalar(q==='HIGH'?1024:512);if(world.key.shadow.map){world.key.shadow.map.dispose();world.key.shadow.map=null;}resize();}
+function quality(){const q=$('quality').value;renderer.shadowMap.enabled=q!=='LOW';renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;world.key.shadow.mapSize.setScalar(q==='HIGH'?2048:1024);match?.arenaArt?.setRenderQuality(q.toLowerCase());if(world.key.shadow.map){world.key.shadow.map.dispose();world.key.shadow.map=null;}resize();}
 quality();addEventListener('resize',resize);$('quality').addEventListener('change',quality);$('sound').addEventListener('click',()=>{soundOn=!soundOn;audio.setEnabled(soundOn);$('sound').textContent=`音 ${soundOn?'ON':'OFF'}`;$('sound').setAttribute('aria-pressed',String(soundOn));});
 function createActor(c){const model=chefFactory.create(scene),geometry=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),line=new THREE.Line(geometry,new THREE.LineDashedMaterial({color:'#ff6247',dashSize:.08,gapSize:.045,transparent:true,opacity:.85}));line.frustumCulled=false;line.visible=false;scene.add(line);const actor={model,line};actors.set(c.id,actor);return actor;}
 function clearActors(){for(const a of actorPool){a.model.root.visible=false;a.line.visible=false;}actors.clear();if(introActor)introActor.root.visible=false;}
@@ -105,9 +106,9 @@ function frame(now){
   if(['CLEAR','GAMEOVER'].includes(sim.state)&&!finishRendered)finish();if(sim.state==='GAMEOVER')deathElapsed=Math.max(0,(now-deathStart)/1000);performanceStats.physics=performance.now()-mark;mark=performance.now();renderObjects(dt);performanceStats.models=performance.now()-mark;mark=performance.now();renderCamera(dt);audio.listener(camera.position,yaw,-pitch);performanceStats.camera=performance.now()-mark;if(document.body.dataset.state!==sim.state)document.body.dataset.state=sim.state;
   if(now-lastHUD>100){lastHUD=now;$('time').textContent=formatTime(sim.time);const c=sim.chef;$('enemy').textContent=names[c.state];$('enemyDetail').textContent=`疑い度 ${Math.round(c.suspicion)}%${sim.dead?'　／　死んだふり':''}`;$('suspicion').style.width=`${c.suspicion}%`;$('water').style.width=`${sim.water}%`;$('waterText').textContent=`${Math.ceil(sim.water)}%`;$('water').parentElement.classList.toggle('low',sim.water<25);if(sim.time>comboUntil)$('combo').textContent='';hint();drawMap($('minimap'),sim);}
  }
- if(now-lastShadow>80){renderer.shadowMap.needsUpdate=true;lastShadow=now;}
+ if(now-lastShadow>(match?.arenaArt?.shadowInterval||80)){renderer.shadowMap.needsUpdate=true;lastShadow=now;}
  mark=performance.now();renderer.render(scene,camera);renderHealth.gameDraws++;performanceStats.render=performance.now()-mark;performanceStats.calls=renderer.info.render.calls;performanceStats.triangles=renderer.info.render.triangles;frames++;fpsTime+=raw;
- if(fpsTime>=1.5){performanceStats.fps=Math.round(frames/fpsTime);$('fps').textContent=`${performanceStats.fps} FPS`;const next=performanceStats.fps<32?Math.max(.65,adaptiveScale-.07):performanceStats.fps>55?Math.min(1,adaptiveScale+.025):adaptiveScale;if(next!==adaptiveScale){adaptiveScale=next;resize();}frames=0;fpsTime=0;}
+ if(fpsTime>=1.5){performanceStats.fps=Math.round(frames/fpsTime);match?.arenaArt?.adapt(performanceStats.fps);$('fps').textContent=`${performanceStats.fps} FPS`;const next=performanceStats.fps<32?Math.max(.65,adaptiveScale-.07):performanceStats.fps>55?Math.min(1,adaptiveScale+.025):adaptiveScale;if(next!==adaptiveScale){adaptiveScale=next;resize();}frames=0;fpsTime=0;}
  if(!$('performance').hidden&&now-lastPerformanceUpdate>=250){lastPerformanceUpdate=now;$('performance').textContent=`${performanceStats.fps} FPS / ${renderer.domElement.width}×${renderer.domElement.height}\n物理・AI ${performanceStats.physics.toFixed(1)} ms\nモデル ${performanceStats.models.toFixed(1)} ms / カメラ ${performanceStats.camera.toFixed(1)} ms\n描画送信 ${performanceStats.render.toFixed(1)} ms\n${performanceStats.calls} calls / ${Math.round(performanceStats.triangles/1000)}k triangles\n音 ${audio.voices.length}/8 voices　F2: 閉じる\n描画ループ ${frameLoop.snapshot().activeLoops} / ゲームcanvas ${document.querySelectorAll('canvas#world').length}\n画面サイズ更新 ${drawingSize.changes}回 / WebGL中断 ${renderHealth.contextLost}・復旧 ${renderHealth.contextRestored}回`;}
 }
 $('hud').hidden=true;document.body.dataset.mode='ESCAPE';showRecord();frameLoop.start();

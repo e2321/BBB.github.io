@@ -10,7 +10,7 @@ export class BattleParticles{
  }
  load(dt){if(dt>0){this.frameAverage+=.03*(Math.min(.15,dt)-this.frameAverage);this.quality=this.frameAverage>1/28?.4:this.frameAverage>1/42?.7:1;}}
  burst(p,{kind='land',direction={x:0,z:-1},water=100,combo=0,time=0,floor=0}={}){
-  if(!this.waterEnabled)return;const base=kind==='water'?28:kind==='exit'?14:kind==='jump'?6:12,count=Math.max(2,Math.round((base+(combo>=10?4:0))*this.quality*(.3+.7*water/100)));
+  if(!this.waterEnabled)return;const base=kind==='water'?28:kind==='exit'?14:kind==='jump'?6:12,count=Math.max(2,Math.round((base+(combo>=10?4:0))*this.quality*(this.detailScale||1)*(.3+.7*water/100)));
   const heading=Math.atan2(direction.z||0,direction.x||0),bias=Math.min(1,Math.hypot(direction.x||0,direction.z||0)/5);
   for(let i=0;i<count;i++){const d=this.drops[this.cursor++%this.capacity],angle=Math.random()*Math.PI*2,speed=.7+Math.random()*1.8;d.p.set(p.x+(Math.random()-.5)*.5,floor+.09,p.z+(Math.random()-.5)*.5);d.v.set(Math.cos(angle)*speed+Math.cos(heading)*bias,.7+Math.random()*(kind==='water'?1.8:1.1),Math.sin(angle)*speed+Math.sin(heading)*bias);d.life=.35+Math.random()*.25;d.size=.45+Math.random()*1.1;d.rainbow=combo>=50;d.hue=i/count;d.gloss=combo>=25;}
   const ring=this.rings[this.ringCursor++%this.rings.length];ring.life=ring.maxLife=kind==='water'?.65:.45;ring.radius=kind==='water'?1.2:kind==='jump'?.45:.75;ring.mesh.position.set(p.x,floor+.026,p.z);ring.mesh.material.color.set(combo>=50?'#f6b8ff':'#9ce4ff');ring.mesh.visible=true;this.update(0,time);
