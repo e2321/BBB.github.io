@@ -1,4 +1,3 @@
-import {extinguish} from '../../gas-burner.js';
 import {characterId} from '../../seafood-settings.js';
 import {ACCENTS} from '../../battle-rules.js';
 import {randomBytes} from 'node:crypto';
@@ -30,8 +29,8 @@ export class Session{
   if(data.kind==='fire'){const d=data.direction;if(!d||Object.keys(d).length!==3||!['x','y','z'].every(k=>Number.isFinite(d[k])&&Math.abs(d[k])<=1.01)||Math.hypot(d.x,d.y,d.z)<.9)return false;return s.fire(m.slot,d);}
   return false;
  }
- connection(id,connected){const m=this.members.get(id);if(!m)return;m.connected=connected;if(!connected)extinguish(this.sim.players[m.slot]);if(this.phase==='MATCH')this.sim.players[m.slot].bot=!connected&&this.fillCpu;if(!connected&&this.phase!=='MATCH'){this.resetVotes();if(this.host===id)this.host=[...this.members.values()].find(q=>q.connected)?.id||id;}}
+ connection(id,connected){const m=this.members.get(id);if(!m)return;m.connected=connected;if(this.phase==='MATCH')this.sim.players[m.slot].bot=!connected&&this.fillCpu;if(!connected&&this.phase!=='MATCH'){this.resetVotes();if(this.host===id)this.host=[...this.members.values()].find(q=>q.connected)?.id||id;}}
  step(){if(this.phase!=='MATCH')return;this.sim.step(1/60);this.tick++;if(this.sim.state==='FINISHED'){this.phase='RESULT';this.resetVotes();}}
  lobby(){return {code:this.code,host:this.host,phase:this.phase,round:this.round,fillCpu:this.fillCpu,players:[...this.members.values()].map(({id,name,character,slot,color,ready,rematch,connected})=>({id,name,character,slot,color,ready,rematch,connected}))};}
- snapshot(){const s=this.sim;return {round:this.round,phase:this.phase,fillCpu:this.fillCpu,tick:this.tick,serverTime:Date.now(),state:s.state,time:s.time,countdownElapsed:s.countdownElapsed,countdownValue:s.countdownValue,players:s.players.map(p=>({...p,ai:undefined,flameContact:undefined,flameOwner:undefined,buffer:undefined,surpriseWindows:undefined})),projectiles:s.projectiles.filter(k=>k.active),burners:s.burners,boosts:s.boosts,hearts:s.hearts,sashimi:s.sashimi,result:s.result,events:s.events.splice(0)};}
+ snapshot(){const s=this.sim;return {round:this.round,phase:this.phase,fillCpu:this.fillCpu,tick:this.tick,serverTime:Date.now(),state:s.state,time:s.time,countdownElapsed:s.countdownElapsed,countdownValue:s.countdownValue,players:s.players.map(p=>({...p,ai:undefined,buffer:undefined,surpriseWindows:undefined})),projectiles:s.projectiles.filter(k=>k.active),boosts:s.boosts,hearts:s.hearts,sashimi:s.sashimi,result:s.result,events:s.events.splice(0)};}
 }

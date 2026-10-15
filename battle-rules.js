@@ -33,7 +33,7 @@ export const movementStrength=water=>interpolateStrength(water,WATER_STRENGTH_CU
 export const jumpStrength=water=>interpolateStrength(water,JUMP_STRENGTH_CURVE);
 // Flat cost is shared by all fish; BP combo multipliers remain independent.
 export const flopWaterCost=()=>FLOP_RULES.jumpWaterCost;
-export const BOOST_RULES={multiplier:1.5,duration:8,respawn:15,radius:.75};
+export const BOOST_RULES={multiplier:2.25,duration:8,respawn:15,radius:.75};
 // Restored from commit 0fa9b41 and backups/before-kitchen-balance/battle-ai.js.
 export const BOT_RULES={accelerationEfficiency:.9,scoreEfficiency:.9,thinkInterval:.2,attackRate:.85,aimError:.12,pitchError:.08,jumpInterval:.15,jumpJitter:.045,turnSpeed:2.8,refillThreshold:45};
 export const FEIGN_RULES={idle:.8,noticeDistance:5,approachTimeout:6,inspectDistance:1.2,inspection:.51,unguarded:.8,releaseWindow:.4,attemptLifetime:1.4,attemptDistance:2.3,bonusDistance:1.5,bonus:500,penalty:1000,retryDelay:4,cooldown:20,stun:3};
@@ -44,3 +44,6 @@ export const COUNTDOWN_RULES={duration:3,flopPeriod:.42,flopHeight:.18,botPeriod
 export const HEART_RULES={heal:1,respawn:15,radius:.75,heightTolerance:.7};
 
 export const RAINBOW_LANDING_BP=50;
+
+// Faster A/D cycle at the same apex and horizontal velocity; Space stays unchanged.
+export const RAINBOW_FLOP_SPEED=1.5;

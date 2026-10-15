@@ -24,13 +24,13 @@ export class SquidMotion {
   const yaw=Number.isFinite(sim.yaw)?sim.yaw:0,delta=this.lastYaw===null?0:Math.atan2(Math.sin(yaw-this.lastYaw),Math.cos(yaw-this.lastYaw));this.lastYaw=yaw;if(elapsed>0)this.turn=clamp(this.turn*Math.exp(-elapsed*10)+delta*.12,-.08,.08);
   this.clock=time;const tick=Math.floor(time*hz);if(tick===this.sample&&!changedGround&&!sim.dead)return;const dt=this.sample<0?1/60:Math.min(.1,Math.max(0,time-(this.sampleTime??time)));this.clock=time;this.sample=tick;this.sampleTime=time;
   const landingAge=time-this.landing;this.impact=sim.grounded&&!sim.dead&&landingAge>=0?(1-Math.exp(-landingAge/.018))*Math.exp(-landingAge/.10)*1.55:0;
-  const desired=sim.dead?0:this.wave(time)*strength;this.bend+=(desired-this.bend)*(elapsed>.3?1:1-Math.exp(-dt/ .028));
+  const rate=Math.max(1,Math.min(1.5,sim.actionSpeed||1));const desired=sim.dead?0:this.wave(time)*strength;this.bend+=(desired-this.bend)*(elapsed>.3?1:1-Math.exp(-dt/(.028/rate)));
   // No additional vertical bounce: authoritative jump height stays independent.
   this.skin.rotation.set(sim.dead?0:this.bend*.035,0,sim.dead?.45:this.bend*.075);this.skin.scale.set(1+this.impact*.025,1-this.impact*.075,1+this.impact*.012);
   for(const rig of this.rigs){const n=rig.bones.length-1;for(let j=0;j<=n;j++){const b=rig.bones[j],u=j/n;let yawBend=0,pitch=0,roll=0;
     if(!sim.dead&&rig.role==='mantle'){yawBend=this.bend*.55*Math.sin(Math.PI*u)/n;pitch=Math.abs(this.bend)*.75*(j===0?1:j<n?-2/(n-1):0)-this.impact*.018*Math.sin(Math.PI*u)/n;}
-    if(!sim.dead&&rig.role==='fin'){const arch=Math.abs(this.wave(time-.035)*strength)*.75;pitch=arch*(j===0?1:j<n?-2/(n-1):0);yawBend=(this.wave(time-.035)*strength*.32-this.turn)*Math.sin(Math.PI*u)/n;roll=Math.sin(time*13-u*2)*Math.abs(this.bend)*.018*u;}
-    if(!sim.dead&&rig.role==='arm'){const delay=.018+(rig.index%4)*.009+u*(rig.tentacle?.105:.065),lag=this.wave(time-delay)*strength,amp=rig.tentacle?1.4:1,splay=Math.cos(rig.index/10*Math.PI*2);yawBend=clamp((lag*.62*amp+this.impact*splay*.12-this.turn*u)*( .45+.55*u)/n,-(rig.tentacle?.42:.30)/n,(rig.tentacle?.42:.30)/n);const settle=Number.isFinite(this.landing)?Math.sin((time-this.landing-delay)*18-rig.index*.42)*Math.exp(-Math.max(0,time-this.landing)*7):0;pitch=clamp((sim.grounded?.055:.022)+settle*.025+lag*.025,-.035,.085)/n;roll=Math.sin(time*11-rig.index*.61-u*2)*Math.abs(lag)*.035*u/n;}
+    if(!sim.dead&&rig.role==='fin'){const arch=Math.abs(this.wave(time-.035/rate)*strength)*.75;pitch=arch*(j===0?1:j<n?-2/(n-1):0);yawBend=(this.wave(time-.035)*strength*.32-this.turn)*Math.sin(Math.PI*u)/n;roll=Math.sin(time*13-u*2)*Math.abs(this.bend)*.018*u;}
+    if(!sim.dead&&rig.role==='arm'){const delay=.018+(rig.index%4)*.009+u*(rig.tentacle?.105:.065),lag=this.wave(time-delay/rate)*strength,amp=rig.tentacle?1.4:1,splay=Math.cos(rig.index/10*Math.PI*2);yawBend=clamp((lag*.62*amp+this.impact*splay*.12-this.turn*u)*( .45+.55*u)/n,-(rig.tentacle?.42:.30)/n,(rig.tentacle?.42:.30)/n);const settle=Number.isFinite(this.landing)?Math.sin((time-this.landing-delay)*18-rig.index*.42)*Math.exp(-Math.max(0,time-this.landing)*7):0;pitch=clamp((sim.grounded?.055:.022)+settle*.025+lag*.025,-.035,.085)/n;roll=Math.sin(time*11-rig.index*.61-u*2)*Math.abs(lag)*.035*u/n;}
     b.rotation.set(pitch,yawBend,roll);
    }}
  }
