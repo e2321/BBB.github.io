@@ -44,8 +44,11 @@ export const COUNTDOWN_RULES={duration:3,flopPeriod:.42,flopHeight:.18,botPeriod
 
 export const RAINBOW_LANDING_BP=50;
 
-// Faster A/D cycle at the same apex and horizontal velocity; Space stays unchanged.
-export const RAINBOW_FLOP_SPEED=1.5;
+// BBB A/D cycles and travel speed; Space and tutorial motion keep their existing pace.
+export const NORMAL_FLOP_SPEED=.85;
+export const RAINBOW_FLOP_SPEED=1.25;
+export const PLAYER_KNIFE_COOLDOWN_MULTIPLIER=.8;
+export const knifeFireInterval=player=>BATTLE.fireInterval*(player.bot?1:PLAYER_KNIFE_COOLDOWN_MULTIPLIER);
 
 export const DEFAULT_MAX_HP=3;
 export const validMaxHP=n=>typeof n==='number'&&Number.isInteger(n)&&n>=1&&n<=4;

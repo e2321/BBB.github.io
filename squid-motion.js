@@ -24,7 +24,7 @@ export class SquidMotion {
   const yaw=Number.isFinite(sim.yaw)?sim.yaw:0,delta=this.lastYaw===null?0:Math.atan2(Math.sin(yaw-this.lastYaw),Math.cos(yaw-this.lastYaw));this.lastYaw=yaw;if(elapsed>0)this.turn=clamp(this.turn*Math.exp(-elapsed*10)+delta*.12,-.08,.08);
   this.clock=time;const tick=Math.floor(time*hz);if(tick===this.sample&&!changedGround&&!sim.dead)return;const dt=this.sample<0?1/60:Math.min(.1,Math.max(0,time-(this.sampleTime??time)));this.clock=time;this.sample=tick;this.sampleTime=time;
   const landingAge=time-this.landing;this.impact=sim.grounded&&!sim.dead&&landingAge>=0?(1-Math.exp(-landingAge/.018))*Math.exp(-landingAge/.10)*1.55:0;
-  const rate=Math.max(1,Math.min(1.5,sim.actionSpeed||1));const desired=sim.dead?0:this.wave(time)*strength;this.bend+=(desired-this.bend)*(elapsed>.3?1:1-Math.exp(-dt/(.028/rate)));
+  const rate=Math.max(.5,Math.min(1.5,sim.actionSpeed||1));const desired=sim.dead?0:this.wave(time)*strength;this.bend+=(desired-this.bend)*(elapsed>.3?1:1-Math.exp(-dt/(.028/rate)));
   // No additional vertical bounce: authoritative jump height stays independent.
   this.skin.rotation.set(sim.dead?0:this.bend*.035,0,sim.dead?.45:this.bend*.075);this.skin.scale.set(1+this.impact*.025,1-this.impact*.075,1+this.impact*.012);
   for(const rig of this.rigs){const n=rig.bones.length-1;for(let j=0;j<=n;j++){const b=rig.bones[j],u=j/n;let yawBend=0,pitch=0,roll=0;

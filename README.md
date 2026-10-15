@@ -69,3 +69,5 @@ npm.cmd run test:pages
 最新の水分・50コンボ・疑問度調整は [BBB_LATEST_UPDATE.md](BBB_LATEST_UPDATE.md) を参照してください。
 
 BBBの床・頭上順位・水しぶき・BP奪取5%・ハート回復アイテムの変更は [docs/BBB_VISUAL_HEARTS.md](docs/BBB_VISUAL_HEARTS.md) に記載しています。
+
+BBBのA/Dビタンは従来の85%の速度、レインボー中はその1.25倍（従来通常速度の1.0625倍）です。Spaceの周期は維持。包丁のプレイヤー用待ち時間は0.48秒、CPU用の基準0.6秒とAIの攻撃間隔は維持しています。
