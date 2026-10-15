@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
+import {prepareFishQuality,finishFishQuality} from './fish-quality.js';
 import { RADIUS } from './physics-config.js';
 
 export async function loadFish(scene,onProgress=()=>{}) {
@@ -20,7 +21,7 @@ function createFish(gltf,scene,instance=false){
  function play(name,once=false){if(current===name&&!once)return;const action=actions.get(name);if(!action)return;const previous=actions.get(current);action.reset();action.setLoop(once?THREE.LoopOnce:THREE.LoopRepeat,once?1:Infinity);action.clampWhenFinished=once;action.enabled=true;action.setEffectiveWeight(motionStrength);action.play();if(previous&&previous!==action){previous.fadeOut(.06);action.fadeIn(.06);}current=name;}
  play('FeignDeath');
  const api={root,skin,animations:[...actions.keys()],vertices,skinnedMeshes,play,
-  createInstance(parent){return createFish({...gltf,scene:clone(gltf.scene)},parent,true);},
+  createInstance(parent,options){const modelScene=clone(gltf.scene);if(options)prepareFishQuality(modelScene,options.quality);const model=createFish({...gltf,scene:modelScene},parent,true);return options?finishFishQuality(model,options.quality):model;},
   accent(color){for(const item of materials){if(/skin|scale/i.test(item.mat.name)){item.color.copy(item.originalColor).lerp(new THREE.Color(color),.28);item.mat.color.copy(item.color);}}},
   rainbow(amount,time,hit=false){if(hit)return;for(const {mat} of materials){if(mat.emissive)mat.emissive.setHSL((time*.12+mat.id*.03)%1,.8,.09*amount);}},
   flash(value){for(const {mat} of materials){mat.emissive?.setRGB(value?1.8:0,value?1.8:0,value?1.8:0);}},

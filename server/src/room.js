@@ -6,7 +6,7 @@ export class BBBRoom extends Room{
  syncPhase(){if(this.session.phase==='LOBBY')this.unlock();else this.lock();this.sentTick=this.session.tick;this.broadcastLobby();if(this.session.phase!=='LOBBY')this.broadcast('snapshot',this.session.snapshot());}
  accept(client){const now=Date.now(),bucket=client.userData??={tokens:120,at:now};bucket.tokens=Math.min(120,bucket.tokens+Math.max(0,now-bucket.at)*.12);bucket.at=now;if(bucket.tokens<1)return false;bucket.tokens--;return true;}
  onAuth(client,options){if(options.code!==this.session.code)throw new Error('ルームコードが一致しません');if(!this.session.members.size&&options.ticket!==this.ticket)throw new Error('作成者の認証が必要です');return true;}
- onJoin(client,options){this.session.add(client.sessionId,options.name);this.expiry.clear();this.broadcastLobby();}
+ onJoin(client,options){this.session.add(client.sessionId,options.name,options.character);this.expiry.clear();this.broadcastLobby();}
  broadcastLobby(){this.broadcast('lobby',this.session.lobby());}
  async onLeave(client,consented){this.session.connection(client.sessionId,false);this.broadcastLobby();if(!consented){try{await this.allowReconnection(client,20);this.session.connection(client.sessionId,true);this.broadcastLobby();if(this.session.phase!=='LOBBY')this.broadcast('snapshot',this.session.snapshot());return;}catch{}}
   const m=this.session.members.get(client.sessionId);if(m&&this.session.phase==='MATCH'){const p=this.session.sim.players[m.slot];p.bot=this.session.fillCpu;p.spectator=!this.session.fillCpu;if(p.spectator)p.dead=true;p.name=`CPU ${m.slot+1}`;p.networkId=`${this.session.code}:cpu:${m.slot}`;}this.session.remove(client.sessionId);this.broadcastLobby();if(!this.session.members.size)this.disconnect();
