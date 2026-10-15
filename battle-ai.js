@@ -49,12 +49,12 @@ export class BotController{
   const escape=p.ai.waterEscape;if(escape&&(s.time>=escape.until||!p.inWater)){p.ai.waterEscape=null;p.ai.avoidPoolUntil=Math.max(p.ai.avoidPoolUntil||0,s.time+4);p.ai.nextThink=0;}
   const waterEscape=!!p.ai.waterEscape;
   if(s.stage.id==='kitchen'&&!waterEscape){
-   const threat=s.chefs.filter(c=>c.state!=='STUNNED'&&Math.hypot(c.x-p.p.x,c.z-p.p.z)<KITCHEN_BOT_RULES.escapeDistance).sort((a,b)=>Math.hypot(a.x-p.p.x,a.z-p.p.z)-Math.hypot(b.x-p.p.x,b.z-p.p.z))[0];
+   const threat=s.chefs.filter(c=>Math.hypot(c.x-p.p.x,c.z-p.p.z)<KITCHEN_BOT_RULES.escapeDistance).sort((a,b)=>Math.hypot(a.x-p.p.x,a.z-p.p.z)-Math.hypot(b.x-p.p.x,b.z-p.p.z))[0];
    if(threat&&s.time>=(p.ai.nextDefense||0)&&!p.ai.prankChef){p.ai.nextDefense=s.time+2.5;
     if(p.grounded&&!p.inWater&&threat.state!=='ATTACKING'&&s.random()<.35){s.feign(p.id);p.ai.hideUntil=s.time+2.8;p.ai.prankChef=threat.id;p.ai.prankUntil=p.ai.hideUntil;return;}
     const d=Math.hypot(p.p.x-threat.x,p.p.z-threat.z)||1;p.ai.escapeGoal={x:clamp(p.p.x+(p.p.x-threat.x)/d*5,-12,12),z:clamp(p.p.z+(p.p.z-threat.z)/d*5,-12,12)};p.ai.escapeUntil=s.time+1.8;p.ai.nextThink=0;
    }
-   p.ai.nextPrank??=10+p.id*4;if(s.time>=p.ai.nextPrank){p.ai.nextPrank=s.time+25+p.id*3;const c=s.chefs.find(c=>s.time>=c.nextBonus&&Math.hypot(c.x-p.p.x,c.z-p.p.z)<5);if(c&&p.water>65&&s.random()<.25){p.ai.prankChef=c.id;p.ai.prankUntil=s.time+7;}}
+   p.ai.nextPrank??=10+p.id*4;if(s.time>=p.ai.nextPrank){p.ai.nextPrank=s.time+25+p.id*3;const c=s.chefs.find(c=>s.chefController.rewardReady(c,p)&&Math.hypot(c.x-p.p.x,c.z-p.p.z)<5);if(c&&p.water>65&&s.random()<.25){p.ai.prankChef=c.id;p.ai.prankUntil=s.time+7;}}
    const c=s.chefs.find(c=>c.id===p.ai.prankChef);if(c&&s.time<p.ai.prankUntil){if(p.feigning){if(c.target===p.id&&c.unguarded){p.ai.prankDecision??=s.random();if(!p.ai.hideUntil||p.ai.prankDecision<.45){s.jump(p.id,p.inputKey==='A'?'D':'A');p.ai.prankChef=null;p.ai.hideUntil=0;p.ai.prankDecision=null;}}return;}if(p.grounded&&Math.hypot(c.x-p.p.x,c.z-p.p.z)<1.2){s.feign(p.id);return;}}
    else if(p.feigning){s.jump(p.id,'Space');p.ai.prankChef=null;p.ai.hideUntil=0;p.ai.prankDecision=null;return;}
   }

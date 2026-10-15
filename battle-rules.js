@@ -36,7 +36,7 @@ export const flopWaterCost=()=>FLOP_RULES.jumpWaterCost;
 export const BOOST_RULES={multiplier:1.5,duration:8,respawn:15,radius:.75};
 // Restored from commit 0fa9b41 and backups/before-kitchen-balance/battle-ai.js.
 export const BOT_RULES={accelerationEfficiency:.9,scoreEfficiency:.9,thinkInterval:.2,attackRate:.85,aimError:.12,pitchError:.08,jumpInterval:.15,jumpJitter:.045,turnSpeed:2.8,refillThreshold:45};
-export const FEIGN_RULES={idle:.8,noticeDistance:5,approachTimeout:6,inspectDistance:1.2,inspection:.51,unguarded:.8,releaseWindow:.4,attemptLifetime:1.4,attemptDistance:2.3,bonusDistance:1.5,bonus:500,penalty:1000,retryDelay:4,cooldown:20,stun:3};
+export const FEIGN_RULES={idle:.8,noticeDistance:5,approachTimeout:6,inspectDistance:1.2,inspection:.51,unguarded:1.1,releaseWindow:.6,attemptLifetime:1.4,attemptDistance:2.3,bonusDistance:1.8,bonus:1000,penalty:1000,retryDelay:4,cooldown:20,reactionDuration:.65};
 export const CHEF_RULES={noticeDistance:7,chaseDistance:10,patrolSpeed:.7,chaseSpeed:1.35,attackDistance:1.55,attackHeight:.85,windup:.75,commitTime:.35,attackCooldown:3.2,hitGrace:.8,thinkInterval:.35};
 export const KITCHEN_BOT_RULES={escapeDistance:3.5};
 export const COUNTDOWN_RULES={duration:3,flopPeriod:.42,flopHeight:.18,botPeriod:.7,startDisplay:.65};

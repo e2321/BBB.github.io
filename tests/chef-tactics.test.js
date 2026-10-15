@@ -50,15 +50,15 @@ test('feigning before a committed strike leads to inspection and can safely outl
 test('a late feign in front of an already committed chef does not guarantee protection',()=>{
  const s=game(),c=s.chefs[0],p=s.players[0];p.p={x:c.x,y:.28,z:c.z+1};c.nextAttack=0;s.step();advance(s,CHEF_RULES.commitTime+.02);s.feign(0);advance(s,.4);assert.equal(p.hp,BATTLE.hp-1);
 });
-test('surprise has a 0.8-second unguarded window and a 0.4-second release deadline at different tick rates',()=>{
- assert.equal(FEIGN_RULES.unguarded,.8);assert.equal(FEIGN_RULES.releaseWindow,.4);assert.equal(FEIGN_RULES.bonusDistance,1.5);
- for(const dt of [1/30,1/60,1/144]){const s=game(),{p,c}=ready(s);s.releaseFeign(p);advance(s,.4,dt);assert.equal(s.jump(0,'A'),true);assert.equal(p.points,500);assert.equal(c.state,'STUNNED');assert.equal(c.nextBonus,s.time+20);}
+test('surprise has a 1.1-second unguarded window and a 0.6-second release deadline at different tick rates',()=>{
+ assert.equal(FEIGN_RULES.unguarded,1.1);assert.equal(FEIGN_RULES.releaseWindow,.6);assert.equal(FEIGN_RULES.bonusDistance,1.8);
+ for(const dt of [1/30,1/60,1/144]){const s=game(),{p,c}=ready(s);s.releaseFeign(p);advance(s,FEIGN_RULES.releaseWindow,dt);assert.equal(s.jump(0,'A'),true);assert.equal(p.points,1000);assert.equal(c.state,'CHASING');assert.equal(c.rewardUntil[p.id],s.time+20);}
 });
 test('early, late, delayed or distant surprise attempts lose one thousand BP once, with zero floor',()=>{
  for(const scenario of ['early','late','delay','distance'])for(const points of [1500,250])for(const bot of [false,true]){
   const s=game(),{p,c}=scenario==='early'?observed(s):ready(s);p.points=points;
   if(scenario==='late')advance(s,FEIGN_RULES.unguarded+.02);
-  if(scenario==='distance')p.p.z=c.z+1.65;
+  if(scenario==='distance')p.p.z=c.z+FEIGN_RULES.bonusDistance+.15;
   s.releaseFeign(p);if(scenario==='delay')advance(s,FEIGN_RULES.releaseWindow+.02);
   p.bot=bot;s.jump(p.id,'A');assert.equal(p.points,Math.max(0,points-1000),scenario);assert.equal(c.state,'CHASING');assert.equal(c.target,p.id);assert.equal(c.retryUntil,s.time+4);
   s.chefController.surprise(p);assert.equal(s.events.filter(e=>e.type==='chefFail').length,1);assert.equal(s.events.filter(e=>e.type==='chefBonus').length,0);
@@ -73,9 +73,9 @@ test('normal flops, unobserved feign, a plain release and Space escape never tri
   assert.equal(p.points,1200);assert.equal(s.events.filter(e=>e.type==='chefFail').length,0);
  }
 });
-test('a failed session is blocked briefly; a later fresh attempt can earn the same fixed five hundred',()=>{
+test('a failed session is blocked briefly; a later fresh attempt can earn the same fixed one thousand',()=>{
  const s=game(),{p,c}=observed(s);p.points=1200;s.jump(0,'A');assert.equal(p.points,200);const retry=c.retryUntil;p.grounded=true;p.buffer=null;p.v={x:0,y:0,z:0};s.feign(0);advance(s,.2);assert.equal(c.unguarded,false);
- s.time=retry+.01;p.feigning=false;p.lastJump=-10;p.inputKey='';p.p={x:c.x,y:.28,z:c.z+1};c.target=null;c.state='CHASING';c.nextTargetThink=0;ready(s);const before=p.points;s.jump(0,'D');assert.equal(p.points-before,500);
+ s.time=retry+.01;p.feigning=false;p.lastJump=-10;p.inputKey='';p.p={x:c.x,y:.28,z:c.z+1};c.target=null;c.state='CHASING';c.nextTargetThink=0;ready(s);const before=p.points;s.jump(0,'D');assert.equal(p.points-before,1000);
 });
 test('both BBB stages recover twenty per second smoothly for every fish, clamped at one hundred',()=>{
  assert.equal(FLOP_RULES.waterRecovery,20);for(const stage of ['normal','kitchen'])for(const id of [0,1,2,3]){const s=game(stage),p=s.players[id],w=s.puddles[0];p.p={x:w.x,y:.28,z:w.z};p.water=20;s.chefs=[];advance(s,1);assert.ok(Math.abs(p.water-40)<1e-8);p.water=99;advance(s,1);assert.equal(p.water,100);assert.equal(p.points,0);}
@@ -87,4 +87,8 @@ test('normal and kitchen share the slightly reduced CPU cadence and efficiency',
 test('CPU chooses flight or feign in response to nearby chefs without freezing all movement',()=>{
  const s=game(),p=s.players[1],c=s.chefs[0];p.bot=true;p.p={x:c.x,y:.28,z:c.z+2};p.ai.nextPrank=999;s.ai.update(p,1/60);assert.ok(p.feigning||p.ai.escapeUntil>s.time);if(!p.feigning)assert.equal(p.ai.goal,p.ai.escapeGoal);
  advance(s,8);assert.equal(p.dead,false);assert.ok(s.events.some(e=>e.type==='jump'||e.type==='feign'));
+});
+
+test('the enlarged opportunity and distance accept a slightly slower reaction for humans and CPU without duplicate bonus',()=>{
+ for(const dt of [1/30,1/60,1/144])for(const bot of [false,true]){const s=game(),{p,c}=ready(s);advance(s,.9,dt);assert.equal(c.unguarded,true);p.p.z=c.z+1.7;s.releaseFeign(p);advance(s,.5,dt);p.bot=bot;assert.equal(s.jump(p.id,'A'),true);assert.equal(p.points,1000);assert.equal(c.state,'CHASING');s.chefController.surprise(p);assert.equal(p.points,1000);assert.equal(s.events.filter(e=>e.type==='chefBonus').length,1);}
 });
