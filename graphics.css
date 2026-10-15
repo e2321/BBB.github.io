@@ -27,3 +27,5 @@ h1 span{color:#f6c57e}.subtitle{color:#e9ca94;letter-spacing:.1em}
 #onlineMenu{background:#153b42ef;border-color:#96b7ab;border-radius:5px}#onlineRoomCode{color:#ffd494}
 @media(max-width:700px){#overlay .titlecard{padding-left:15px}#characterPanel{padding:16px}#battleResultRows td{padding:8px}}
 @media(prefers-reduced-motion:reduce){#start,#modeSelect button,.battle-stage{transition:none}}
+
+.settings{flex-wrap:wrap;max-width:calc(100vw - 30px)}#onlineMaxHP{margin:.5em;padding:.4em;background:#244047;color:#fff;border:1px solid #96b7ab;border-radius:4px}

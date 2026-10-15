@@ -77,8 +77,8 @@ test('a failed session is blocked briefly; a later fresh attempt can earn the sa
  const s=game(),{p,c}=observed(s);p.points=1200;s.jump(0,'A');assert.equal(p.points,200);const retry=c.retryUntil;p.grounded=true;p.buffer=null;p.v={x:0,y:0,z:0};s.feign(0);advance(s,.2);assert.equal(c.unguarded,false);
  s.time=retry+.01;p.feigning=false;p.lastJump=-10;p.inputKey='';p.p={x:c.x,y:.28,z:c.z+1};c.target=null;c.state='CHASING';c.nextTargetThink=0;ready(s);const before=p.points;s.jump(0,'D');assert.equal(p.points-before,500);
 });
-test('both BBB stages recover ten per second smoothly for every fish, clamped at one hundred',()=>{
- assert.equal(FLOP_RULES.waterRecovery,10);for(const stage of ['normal','kitchen'])for(const id of [0,1,2,3]){const s=game(stage),p=s.players[id],w=s.puddles[0];p.p={x:w.x,y:.28,z:w.z};p.water=20;s.chefs=[];advance(s,1);assert.ok(Math.abs(p.water-30)<1e-8);p.water=99;advance(s,1);assert.equal(p.water,100);assert.equal(p.points,0);}
+test('both BBB stages recover twenty per second smoothly for every fish, clamped at one hundred',()=>{
+ assert.equal(FLOP_RULES.waterRecovery,20);for(const stage of ['normal','kitchen'])for(const id of [0,1,2,3]){const s=game(stage),p=s.players[id],w=s.puddles[0];p.p={x:w.x,y:.28,z:w.z};p.water=20;s.chefs=[];advance(s,1);assert.ok(Math.abs(p.water-40)<1e-8);p.water=99;advance(s,1);assert.equal(p.water,100);assert.equal(p.points,0);}
 });
 test('normal and kitchen share the slightly reduced CPU cadence and efficiency',()=>{
  assert.equal(botAttackRate('normal',false),.85);assert.equal(botAttackRate('normal',true),.85);assert.equal(botAttackRate('kitchen',false),.85);assert.equal(botAttackRate('kitchen',true),.85);assert.equal(BOT_RULES.scoreEfficiency,.9);assert.equal(BOT_RULES.accelerationEfficiency,.9);

@@ -9,6 +9,13 @@ export class DrawingBufferSize {
   this.renderer.setDrawingBufferSize(next.width,next.height,next.ratio);this.camera.aspect=next.width/next.height;this.camera.updateProjectionMatrix();this.applied=next;this.changes++;return true;
  }
 }
+// A static menu keeps the last presented frame. Gameplay always draws normally.
+export class MenuRenderGate {
+ constructor(){this.dirty=true;this.wasMenu=false;this.draws=0;this.skipped=0;}
+ invalidate(){this.dirty=true;}
+ allow(menu,visible=true){if(!menu){this.wasMenu=false;return true;}if(!this.wasMenu)this.dirty=true;this.wasMenu=true;if(!visible||!this.dirty){this.skipped++;return false;}this.dirty=false;this.draws++;return true;}
+ snapshot(){return {menuDraws:this.draws,menuFramesSkipped:this.skipped};}
+}
 export class SingleFrameLoop {
  constructor(draw,{request=callback=>requestAnimationFrame(callback),cancel=id=>cancelAnimationFrame(id)}={}){this.draw=draw;this.request=request;this.cancel=cancel;this.running=false;this.pending=null;this.starts=0;this.frames=0;this.maxPending=0;this.callback=now=>{this.pending=null;if(!this.running)return;try{this.draw(now);this.frames++;}finally{this.schedule();}};}
  schedule(){if(this.running&&this.pending===null){this.pending=this.request(this.callback);this.maxPending=Math.max(this.maxPending,1);}}

@@ -61,7 +61,7 @@ export class TutorialController{
  repeatHelp(){this.announce(this.hint.detail,4);}
  get hint(){const s=this.sim,p=s.players[0];if(this.phase===-1)return {name:'BBB / FIRST BITAN',text:TUTORIAL_INTRO[Math.min(3,Math.floor((s.time-this.introStart)/1.1))],detail:'A / Dを押すと、すぐにビタンビタン練習へ！',progress:'攻撃じゃない。ビタンビタンが主役だ。'};const step=TUTORIAL_STEPS[this.phase];let text=step.text,detail=step.detail,progress='';
   if(this.phase===0)progress=`A → D → A → D　${Math.min(this.adCombo,4)} / 4 コンボ`;
-  if(this.phase===1)progress=`水分回復 ${Math.min(15,this.recovered).toFixed(0)} / 15%（毎秒10%）`;
+  if(this.phase===1)progress=`水分回復 ${Math.min(15,this.recovered).toFixed(0)} / 15%（毎秒${this.sim.flopRules.waterRecovery}%）`;
   if(this.phase===2){text=this.blockedTried?'水たまりの外へ出て、もう一度左クリック！':step.text;detail=this.blockedTried?'中では攻撃できない！ マウスで外へ向き、A / Dで出よう。':step.detail;progress=this.blockedTried?'✓ 水中で攻撃不可を体験　□ 外で攻撃':'□ 水たまりの中で左クリック';}
   if(this.phase===3){if(this.fpsHit){text='Vで三人称視点（TPS）へ戻してみよう！';detail='でも忘れるな！ BBBの主役は攻撃じゃない！ ビタンビタンだ！！';}else if(!this.tpsShot){text=this.view==='TPS'?step.text:'まずVでTPSに戻り、練習CPUを狙おう。';}else if(!this.fpsSeen){text='相手を狙うのが難しい？ Vで一人称視点（FPS）！！';detail='狙いやすい視点に切り替えてみよう！';}else{text=this.view==='FPS'?'FPSで練習CPUに1回当てよう！ 左クリックで攻撃。':'VでFPSへ戻り、練習CPUを狙ってみよう。';detail=s.time-this.phaseStart>8?'練習CPUは静止中。倒さなくてOK。狙うときだけFPSも便利！':'狙いはマウスで調整。攻撃は相手のビタンビタンを邪魔する手段！';}progress=`${this.tpsShot?'✓':'□'} TPSで狙う　${this.fpsSeen?'✓':'□'} VでFPS　${this.fpsHit?'✓':'□'} 命中　${this.fpsHit&&this.view==='TPS'?'✓':'□'} TPSへ戻す`;}
   if(this.phase===4)progress=p.inWater?'まずは水たまりの外へ！':'Space → 着地で成功（消費2%）';

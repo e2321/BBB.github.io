@@ -19,7 +19,7 @@ test('both stages share flat one-percent flops and two-percent Space while all c
   const s=new BattleSimulation(23,stage);s.start();const p=s.players[0];p.bot=bot;p.p={x:0,y:.28,z:-6};p.combo=combo;p.lastComboLanding=0;
   s.jump(0,key);assert.equal(p.water,key==='Space'?98:99);assert.equal(p.points,0);p.grounded=true;s.scoreLanding(p);const multiplier=p.combo>=30?3:p.combo>=20?2.5:p.combo>=10?2:p.combo>=5?1.5:1;assert.equal(p.points,Math.round(10*multiplier*(bot?.9:1)));
  }
- assert.equal(FLOP_RULES.waterRecovery,10);
+ assert.equal(FLOP_RULES.waterRecovery,20);
 });
 test('CPU acceleration and scoring are mildly weaker while human movement stays unchanged',()=>{
  for(const stage of ['normal','kitchen'])for(const water of [0,30,100]){
