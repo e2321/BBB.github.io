@@ -1,3 +1,4 @@
+import {prepareSquidRig,bindSquidRig,SquidMotion} from './squid-motion.js';
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {characterId,qualityId,MODEL_QUALITY} from './seafood-settings.js';
@@ -23,25 +24,23 @@ function template(kind,quality){
  part('pupils','pupil',[-1,1].map(s=>oval(s*(eyeWidth+.007),.022,headZ-.002,.005,.007,.007)));
  // Keep the visual envelope close to the existing common fish hit volume.
  const bounds=new THREE.Box3();for(const p of parts){p.geometry.computeBoundingBox();bounds.union(p.geometry.boundingBox);}const scale=.455/(bounds.max.z-bounds.min.z),centerZ=(bounds.min.z+bounds.max.z)/2;
- for(const p of parts){p.geometry.translate(0,0,-centerZ);p.geometry.scale(scale,scale,scale);p.geometry.computeBoundingSphere();p.pivot=p.pivot.map((n,i)=>(n-(i===2?centerZ:0))*scale);}
+ for(const p of parts){p.geometry.translate(0,0,-centerZ);p.geometry.scale(scale,scale,scale);p.geometry.computeBoundingSphere();p.pivot=p.pivot.map((n,i)=>(n-(i===2?centerZ:0))*scale);const role=p.name==='mantle'?'mantle':p.name==='mantle fins'?'fin':p.name.startsWith('arm')?'arm':null;if(role)p.rig=prepareSquidRig(p.geometry,role,role==='arm'?Number(p.name.slice(3)):0,quality);}
  const result={parts,headZ:(headZ-centerZ)*scale};templates.set(key,result);return result;
 }
 export function createSeafoodModel(parent,kind='squid',quality='medium'){
  kind=characterId(kind);quality=qualityId(quality);if(kind==='fish')throw new Error('魚は既存のGLBファクトリを使用してください');
  const data=template(kind,quality),q=MODEL_QUALITY[quality],root=new THREE.Group(),skin=new THREE.Group(),head=new THREE.Object3D();root.add(skin);parent.add(root);head.position.set(0,.03,data.headZ);skin.add(head);skin.position.y=-.055;
- const palette={skin:'#b7aaa0',fin:'#acb0a1',eye:'#c1bca6',pupil:'#101c1c'},materials=new Map(),parts=[];
- for(const item of data.parts){let mat=materials.get(item.category);if(!mat){mat=new THREE.MeshStandardMaterial({color:palette[item.category],roughness:quality==='low'?.8:.53,metalness:0,flatShading:quality==='low',vertexColors:item.category==='skin',side:THREE.DoubleSide});if(item.category==='fin'&&quality!=='low'){mat.transparent=true;mat.opacity=.86;mat.depthWrite=false;}materials.set(item.category,mat);}const mesh=new THREE.Mesh(item.geometry,mat);mesh.userData.sharedPool=true;mesh.castShadow=q.shadows;mesh.receiveShadow=q.shadows;const pivot=new THREE.Group();pivot.name=item.name;pivot.position.fromArray(item.pivot);mesh.position.set(-item.pivot[0],-item.pivot[1],-item.pivot[2]);pivot.add(mesh);skin.add(pivot);parts.push({pivot,name:item.name});}
- const originals=new Map([...materials].map(([k,m])=>[k,m.color.clone()])),colors=new Map([...originals].map(([k,c])=>[k,c.clone()]));let strength=1,frame=-1,strokeSide=1;const contact=new FishContact({root});
- const api={root,skin,kind,quality,animations:['TailBeat_A','TailBeat_D','Airborne','Landing','FeignDeath'],vertices:data.parts.reduce((n,p)=>n+p.geometry.attributes.position.count,0),skinnedMeshes:0,
+ const palette={skin:'#b7aaa0',fin:'#acb0a1',eye:'#c1bca6',pupil:'#101c1c'},materials=new Map(),rigs=[];
+ for(const item of data.parts){let mat=materials.get(item.category);if(!mat){mat=new THREE.MeshStandardMaterial({color:palette[item.category],roughness:quality==='low'?.8:.53,metalness:0,flatShading:quality==='low',vertexColors:item.category==='skin',side:THREE.DoubleSide});if(item.category==='fin'&&quality!=='low'){mat.transparent=true;mat.opacity=.86;mat.depthWrite=false;}materials.set(item.category,mat);}const mesh=item.rig?new THREE.SkinnedMesh(item.geometry,mat):new THREE.Mesh(item.geometry,mat);if(item.rig){mesh.boundingSphere=item.geometry.boundingSphere.clone();mesh.boundingSphere.radius+=.12;}mesh.userData.sharedPool=true;mesh.castShadow=q.shadows;mesh.receiveShadow=q.shadows;const pivot=new THREE.Group();pivot.name=item.name;pivot.position.fromArray(item.pivot);mesh.position.set(-item.pivot[0],-item.pivot[1],-item.pivot[2]);pivot.add(mesh);skin.add(pivot);if(item.rig)rigs.push(bindSquidRig(mesh,item.rig));}
+ const originals=new Map([...materials].map(([k,m])=>[k,m.color.clone()])),colors=new Map([...originals].map(([k,c])=>[k,c.clone()]));let strength=1;const contact=new FishContact({root}),motion=new SquidMotion(skin,rigs,quality);
+ const api={root,skin,kind,quality,animations:['TailBeat_A','TailBeat_D','Airborne','Landing','FeignDeath'],vertices:data.parts.reduce((n,p)=>n+p.geometry.attributes.position.count,0),skinnedMeshes:rigs.length,
   accent(value){for(const [k,m] of materials){colors.get(k).copy(originals.get(k));if(k==='skin'||k==='fin')colors.get(k).lerp(new THREE.Color(value),.25);m.color.copy(colors.get(k));}},
   moisture(value){const dry=1-THREE.MathUtils.clamp(value/100,0,1);for(const [k,m] of materials){m.color.copy(colors.get(k));m.roughness=Math.min(1,(quality==='low'?.8:.53)+dry*.3);}},
   strength(v){strength=v;},flash(hit){for(const m of materials.values())m.emissive.setScalar(hit?1.8:0);},rainbow(amount,time,hit){if(!hit)for(const m of materials.values())m.emissive.setHSL(time*.12%1,.8,.09*amount);},
-  headPosition(target){head.getWorldPosition(target);},stroke(key){strokeSide=key==='D'?-1:1;frame=-1;},play(){},poseStats(){return {clip:'Seafood',sideways:skin.rotation.z};},
-  reset(){root.visible=true;frame=-1;for(const {pivot} of parts)pivot.rotation.set(0,0,0);skin.rotation.set(0,0,0);},
-  update(sim){root.position.set(sim.p.x,sim.p.y,sim.p.z);root.rotation.set(0,sim.yaw+Math.PI/2,0);const tick=Math.floor(sim.time*q.animationHz);if(tick!==frame){frame=tick;const t=sim.time,w=sim.dead?0:Math.min(1,sim.stroke/.44)*strength,side=sim.strokeSide||strokeSide;skin.rotation.z=sim.dead?.45:side*Math.sin(w*Math.PI)*.32;skin.rotation.x=sim.dead?0:Math.sin(t*12)*w*.09;
-   for(let i=0;i<parts.length;i++){const {pivot,name}=parts[i];if(name.startsWith('arm')){pivot.rotation.x=Math.sin(t*11-i*.5)*(.03+w*.15);pivot.rotation.y=Math.sin(t*8-i*.5)*w*.17;}if(name==='mantle fins')pivot.rotation.y=Math.sin(t*11-.6)*w*.12;}
-  }if(sim.grounded)contact.correct(sim.p.y-BATTLE.bodyY+.008);},
-  dispose(){root.removeFromParent();materials.forEach(m=>m.dispose());}
+  headPosition(target){head.getWorldPosition(target);},stroke(){},play(){},poseStats(){return {clip:'SquidFlex',sideways:skin.rotation.z,...motion.snapshot()};},
+  reset(){root.visible=true;motion.reset();},
+  update(sim){root.position.set(sim.p.x,sim.p.y,sim.p.z);root.rotation.set(0,sim.yaw+Math.PI/2,0);motion.update(sim,strength,q.animationHz);if(sim.grounded)contact.correct(sim.p.y-BATTLE.bodyY+.008);},
+  dispose(){root.removeFromParent();motion.dispose();materials.forEach(m=>m.dispose());}
  };return api;
 }
 export function seafoodTemplateStats(kind,quality){const t=template(kind,qualityId(quality));return {vertices:t.parts.reduce((n,p)=>n+p.geometry.attributes.position.count,0),meshes:t.parts.length};}
