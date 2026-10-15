@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import {BattleMode} from './battle-view.js';
+import {improveTutorialFish} from './tutorial-fish.js';
 import {TutorialController,TUTORIAL_ROUTE} from './tutorial-controller.js';
 import {texture} from './visuals.js';
 const $=id=>document.getElementById(id);
 const time=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${(t%60).toFixed(1).padStart(4,'0')}`;
 export class TutorialMode extends BattleMode{
- constructor(scene,camera,fish,effects,audio,chefFactory){super(scene,camera,fish,effects,audio,chefFactory,'tutorial');this.tutorial=new TutorialController(this.sim);
+ constructor(scene,camera,fish,effects,audio,chefFactory){super(scene,camera,fish,effects,audio,chefFactory,'tutorial');improveTutorialFish(this.models[0]);this.tutorial=new TutorialController(this.sim);
   if(chefFactory)for(const c of this.sim.chefs)this.chefModels.push(chefFactory.create(this.root));
   const wood=new THREE.MeshStandardMaterial({map:texture('wood'),roughness:.72});for(let i=0;i<this.sim.obstacles.length;i++)if(this.sim.obstacles[i].kind==='prep-barrier')this.meshes[i].material=wood;
   const canvas=document.createElement('canvas');canvas.width=canvas.height=256;const ctx=canvas.getContext('2d');ctx.fillStyle='#f5ecd4';ctx.fillRect(0,0,256,256);for(const [r,c] of [[105,'#ab4b39'],[75,'#f5ecd4'],[45,'#ab4b39'],[15,'#ffe477']]){ctx.fillStyle=c;ctx.beginPath();ctx.arc(128,128,r,0,Math.PI*2);ctx.fill();}
