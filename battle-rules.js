@@ -38,7 +38,7 @@ export const BOOST_RULES={multiplier:1.5,duration:8,respawn:15,radius:.75};
 export const BOT_RULES={accelerationEfficiency:.9,scoreEfficiency:.9,thinkInterval:.2,attackRate:.85,aimError:.12,pitchError:.08,jumpInterval:.15,jumpJitter:.045,turnSpeed:2.8,refillThreshold:45};
 export const FEIGN_RULES={idle:.8,noticeDistance:5,approachTimeout:6,inspectDistance:1.2,inspection:.51,unguarded:.8,releaseWindow:.4,attemptLifetime:1.4,attemptDistance:2.3,bonusDistance:1.5,bonus:500,penalty:1000,retryDelay:4,cooldown:20,stun:3};
 export const CHEF_RULES={noticeDistance:7,chaseDistance:10,patrolSpeed:.7,chaseSpeed:1.35,attackDistance:1.55,attackHeight:.85,windup:.75,commitTime:.35,attackCooldown:3.2,hitGrace:.8,thinkInterval:.35};
-export const KITCHEN_BOT_RULES={leaderTargetChance:.28,escapeDistance:3.5};
+export const KITCHEN_BOT_RULES={escapeDistance:3.5};
 export const COUNTDOWN_RULES={duration:3,flopPeriod:.42,flopHeight:.18,botPeriod:.7,startDisplay:.65};
 
 
@@ -46,7 +46,7 @@ export const RAINBOW_LANDING_BP=50;
 
 // BBB A/D cycles and travel speed; Space and tutorial motion keep their existing pace.
 export const NORMAL_FLOP_SPEED=.85;
-export const RAINBOW_FLOP_SPEED=1.25;
+export const RAINBOW_FLOP_SPEED=1.5;
 export const PLAYER_KNIFE_COOLDOWN_MULTIPLIER=.8;
 export const knifeFireInterval=player=>BATTLE.fireInterval*(player.bot?1:PLAYER_KNIFE_COOLDOWN_MULTIPLIER);
 
@@ -54,12 +54,12 @@ export const DEFAULT_MAX_HP=3;
 export const validMaxHP=n=>typeof n==='number'&&Number.isInteger(n)&&n>=1&&n<=4;
 export const maxHPValue=n=>validMaxHP(n)?n:DEFAULT_MAX_HP;
 export const RAINBOW_WATER_COST_MULTIPLIER=.5;
-export const RAINBOW_WATER_BONUS=20;
-export const BP_AREA_MULTIPLIER=2;
+export const RAINBOW_WATER_BONUS=50;
 export const WALL_FARM_RULES={seconds:2,minMovement:.025,releaseDistance:.08};
-export const BOT_COMBO_RULES={continueChance:.9,centerChance:.72,refillThreshold:25};
+export const BOT_COMBO_RULES={continueChance:.9,refillThreshold:25};
 export const BOT_CLOSE_AIM={distance:5,reaction:.22,turnSpeed:2.1,yawError:.65,pitchError:.22};
 
 export const BOT_DODGE_RULES={lookAhead:.45,radius:.65,duration:.6,distance:2.2};
 
-export const RAINBOW_AREA_BP=70;
+// Small attack-only leader preference, with hysteresis and shared-target pressure.
+export const BOT_TARGET_RULES={range:25,distanceOffset:2,leaderBonus:.12,currentBonus:.08,focusPenalty:.28,holdMin:1.2,holdJitter:.6,decisionMin:.35,decisionJitter:.3,switchRatio:1.12,urgentSwitchRatio:1.6};

@@ -1,4 +1,4 @@
-import {BATTLE,BOT_RULES,BOT_COMBO_RULES,BOT_CLOSE_AIM,BOT_DODGE_RULES,KITCHEN_BOT_RULES,FEIGN_RULES,movementStrength,angleDelta,clamp} from './battle-rules.js';
+import {BATTLE,BOT_RULES,BOT_COMBO_RULES,BOT_CLOSE_AIM,BOT_DODGE_RULES,BOT_TARGET_RULES,KITCHEN_BOT_RULES,FEIGN_RULES,movementStrength,angleDelta,clamp} from './battle-rules.js';
 import {segmentBox} from './simulation.js';
 export const BOT_PREDICTIVE_SHOT_RATE=1/3;
 export const botAttackRate=()=>BOT_RULES.attackRate;
@@ -17,6 +17,23 @@ export function visible(sim,a,b){const start={x:a.p.x,y:a.p.y+.10,z:a.p.z},end={
 function crossesPool(a,b,w){if(!w)return false;const dx=b.x-a.x,dz=b.z-a.z,t=clamp(((w.x-a.x)*dx+(w.z-a.z)*dz)/(dx*dx+dz*dz||1),0,1);if(t===0&&Math.hypot(b.x-w.x,b.z-w.z)>=Math.hypot(a.x-w.x,a.z-w.z))return false;return Math.hypot(a.x+dx*t-w.x,a.z+dz*t-w.z)<w.radius*1.14+.12;}
 export class BotController{
  constructor(sim){this.sim=sim;this.nodes=[];for(let z=-12;z<=12;z+=2)for(let x=-12;x<=12;x+=2)if(!sim.obstacles.some(o=>x>o.min.x-.65&&x<o.max.x+.65&&z>o.min.z-.65&&z<o.max.z+.65))this.nodes.push({id:this.nodes.length,x,z,edges:[]});for(const a of this.nodes)for(const b of this.nodes)if(a!==b&&Math.hypot(a.x-b.x,a.z-b.z)<2.01&&!sim.obstacles.some(o=>segmentBox({x:a.x,y:.25,z:a.z},{x:b.x,y:.25,z:b.z},o,.65)))a.edges.push(b.id);}
+ // Attack selection is independent of navigation and resource goals.
+ attackable(p,q){return !!q&&q!==p&&!q.dead&&!q.spectator&&q.hp>0&&this.sim.time>=(q.invUntil||0)&&Math.hypot(q.p.x-p.p.x,q.p.z-p.p.z)<BOT_TARGET_RULES.range&&visible(this.sim,p,q);}
+ selectAttackTarget(p){
+  const s=this.sim,r=BOT_TARGET_RULES,current=s.players[p.ai.target],valid=this.attackable(p,current);
+  if(valid&&s.time<(p.ai.nextTargetDecision||0))return current;
+  const highest=Math.max(0,...s.players.filter(q=>!q.spectator).map(q=>q.points));let best=null,bestScore=-Infinity,currentScore=0;
+  for(const q of s.players){
+   if(!this.attackable(p,q))continue;
+   const distance=Math.hypot(q.p.x-p.p.x,q.p.z-p.p.z),focused=s.players.filter(other=>other!==p&&other!==q&&other.bot&&!other.dead&&!other.spectator&&!other.ai.refilling&&other.ai.target===q.id&&other.ai.seen&&this.attackable(other,q)).length;
+   const leader=highest>0&&q.points===highest,score=(leader?1+r.leaderBonus:1)*(q===current?1+r.currentBonus:1)/((r.distanceOffset+distance)*(1+focused*r.focusPenalty));
+   if(q===current)currentScore=score;if(score>bestScore){best=q;bestScore=score;}
+  }
+  p.ai.nextTargetDecision=s.time+r.decisionMin+s.random()*r.decisionJitter;
+  if(valid&&best!==current){const threshold=s.time<(p.ai.targetHoldUntil||0)?r.urgentSwitchRatio:r.switchRatio;if(bestScore<currentScore*threshold)best=current;}
+  if(best?.id!==p.ai.target)p.ai.targetHoldUntil=s.time+r.holdMin+s.random()*r.holdJitter;
+  p.ai.target=best?.id??null;p.ai.seen=!!best;return best;
+ }
  nearest(p){let best=this.nodes[0],d=Infinity;for(const n of this.nodes){const delta=(n.x-p.x)**2+(n.z-p.z)**2;if(delta<d){d=delta;best=n;}}return best;}
  route(a,b,avoid=null){const from=this.nearest(a),to=this.nearest(b),queue=[from.id],previous=new Map([[from.id,null]]);for(let i=0;i<queue.length;i++){const id=queue[i];if(id===to.id)break;for(const next of this.nodes[id].edges)if(!previous.has(next)&&!crossesPool(id===from.id?a:this.nodes[id],this.nodes[next],avoid)){previous.set(next,id);queue.push(next);}}if(!previous.has(to.id))return [];const result=[];for(let id=to.id;id!==from.id;id=previous.get(id))result.unshift(this.nodes[id]);return result;}
  attacked(p,owner){
@@ -44,15 +61,14 @@ export class BotController{
   if(!waterEscape&&p.water<(p.combo>=25?BOT_COMBO_RULES.refillThreshold:BOT_RULES.refillThreshold))p.ai.refilling=true;if(p.water>=80)p.ai.refilling=false;
   if(s.time>=p.ai.nextThink){
    if(!p.inWater){for(const k of s.projectiles){if(!k.active||k.owner===p.id||k.stuck>0)continue;const vx=k.v.x-p.v.x,vy=k.v.y-p.v.y,vz=k.v.z-p.v.z,speed=vx*vx+vy*vy+vz*vz;if(speed<1)continue;const t=((p.p.x-k.p.x)*vx+(p.p.y-k.p.y)*vy+(p.p.z-k.p.z)*vz)/speed;if(t<0||t>BOT_DODGE_RULES.lookAhead)continue;const miss=Math.hypot(k.p.x-p.p.x+vx*t,k.p.y-p.p.y+vy*t,k.p.z-p.p.z+vz*t);if(miss>BOT_DODGE_RULES.radius||!visible(s,p,{p:k.p}))continue;const length=Math.hypot(k.v.x,k.v.z)||1,side=p.id%2?1:-1;p.ai.dodgeGoal={x:clamp(p.p.x+side*k.v.z/length*BOT_DODGE_RULES.distance,-12,12),z:clamp(p.p.z-side*k.v.x/length*BOT_DODGE_RULES.distance,-12,12)};p.ai.dodgeUntil=s.time+BOT_DODGE_RULES.duration;break;}}
-   p.ai.nextThink=s.time+BOT_RULES.thinkInterval;let nearest=null,seen=null,dist=Infinity,seenDist=Infinity;for(const q of s.players){if(q===p||q.dead)continue;const d=(q.p.x-p.p.x)**2+(q.p.z-p.p.z)**2;if(d<dist){dist=d;nearest=q;}if(d<seenDist&&visible(s,p,q)){seenDist=d;seen=q;}}
-   const player=s.players[0],playerLeads=s.ranking.find(q=>q.id===0)?.rank===1&&player.points>0;p.ai.playerLeads=playerLeads;if(playerLeads&&!player.dead&&seen&&Math.hypot(player.p.x-p.p.x,player.p.z-p.p.z)<12&&visible(s,p,player)&&s.random()<(s.stage.id==='kitchen'?KITCHEN_BOT_RULES.leaderTargetChance:.18))seen=player;p.ai.target=(seen||nearest)?.id;p.ai.seen=!!seen;
+   p.ai.nextThink=s.time+BOT_RULES.thinkInterval;this.selectAttackTarget(p);
    p.ai.food=p.hp<this.sim.balance.hp?s.sashimi.filter(i=>i.active&&(i.expires===undefined||i.expires>s.time)&&Math.hypot(i.p.x-p.p.x,i.p.z-p.p.z)<7).sort((a,b)=>Math.hypot(a.p.x-p.p.x,a.p.z-p.p.z)-Math.hypot(b.p.x-p.p.x,b.p.z-p.p.z))[0]:null;
    p.ai.boost=s.time>=p.boostUntil?s.boosts.filter(i=>i.active&&Math.hypot(i.p.x-p.p.x,i.p.z-p.p.z)<6).sort((a,b)=>Math.hypot(a.p.x-p.p.x,a.p.z-p.p.z)-Math.hypot(b.p.x-p.p.x,b.p.z-p.p.z))[0]:null;
    p.ai.waterTarget=s.puddles.filter(w=>w!==p.ai.avoidPool||s.time>=(p.ai.avoidPoolUntil||0)).reduce((best,w)=>!best||Math.hypot(w.x-p.p.x,w.z-p.p.z)<Math.hypot(best.x-p.p.x,best.z-p.p.z)?w:best,null);
-   if(!p.ai.pointGoal||s.time>=(p.ai.nextPointGoal||0)||Math.hypot(p.ai.pointGoal.x-p.p.x,p.ai.pointGoal.z-p.p.z)<1){const area=s.stage.bpArea,central=area&&s.random()<BOT_COMBO_RULES.centerChance?this.nodes.filter(n=>((n.x-area.x)/(area.rx*.85))**2+((n.z-area.z)/(area.rz*.85))**2<1):this.nodes;p.ai.pointGoal=central[Math.floor(s.random()*central.length)];p.ai.nextPointGoal=s.time+6;}
-   const prank=s.chefs.find(c=>c.id===p.ai.prankChef&&s.time<p.ai.prankUntil),q=s.players[p.ai.target],escaping=s.stage.id==='kitchen'&&s.time<(p.ai.escapeUntil||0);p.ai.goal=waterEscape?p.ai.waterEscape.goal:s.time<(p.ai.dodgeUntil||0)?p.ai.dodgeGoal:escaping?p.ai.escapeGoal:p.ai.food?.p||(p.ai.refilling?p.ai.waterTarget:prank?{x:prank.x,z:prank.z}:p.ai.boost?.p||(playerLeads?q?.p:p.ai.pointGoal));
+   if(!p.ai.pointGoal||s.time>=(p.ai.nextPointGoal||0)||Math.hypot(p.ai.pointGoal.x-p.p.x,p.ai.pointGoal.z-p.p.z)<1){p.ai.pointGoal=this.nodes[Math.floor(s.random()*this.nodes.length)];p.ai.nextPointGoal=s.time+6;}
+   const prank=s.chefs.find(c=>c.id===p.ai.prankChef&&s.time<p.ai.prankUntil),escaping=s.stage.id==='kitchen'&&s.time<(p.ai.escapeUntil||0);p.ai.goal=waterEscape?p.ai.waterEscape.goal:s.time<(p.ai.dodgeUntil||0)?p.ai.dodgeGoal:escaping?p.ai.escapeGoal:p.ai.food?.p||(p.ai.refilling?p.ai.waterTarget:prank?{x:prank.x,z:prank.z}:p.ai.boost?.p||p.ai.pointGoal);
    const avoid=!waterEscape&&s.time<(p.ai.avoidPoolUntil||0)?p.ai.avoidPool:null;if(avoid&&p.ai.goal&&Math.hypot(p.ai.goal.x-avoid.x,p.ai.goal.z-avoid.z)<avoid.radius*1.14+.3){p.ai.goal=p.ai.waterTarget||p.ai.pointGoal;if(p.ai.goal&&Math.hypot(p.ai.goal.x-avoid.x,p.ai.goal.z-avoid.z)<avoid.radius*1.14+.3)p.ai.goal=this.nodes.find(n=>Math.hypot(n.x-avoid.x,n.z-avoid.z)>avoid.radius+2);}
-   if(p.ai.goal){p.ai.state=waterEscape?'EVADE_WATER':p.ai.refilling?'REFILL':prank?'PRANK':playerLeads?'CHASE':'SCORE';p.ai.path=s.obstacles.some(o=>segmentBox({x:p.p.x,y:.1,z:p.p.z},{x:p.ai.goal.x,y:.1,z:p.ai.goal.z},o,.65))||crossesPool(p.p,p.ai.goal,avoid)?this.route(p.p,p.ai.goal,avoid):[];if(avoid&&crossesPool(p.p,p.ai.goal,avoid)&&!p.ai.path.length){p.ai.goal=this.nodes.filter(n=>!crossesPool(p.p,n,avoid)).sort((a,b)=>Math.hypot(a.x-p.p.x,a.z-p.p.z)-Math.hypot(b.x-p.p.x,b.z-p.p.z))[0]||p.p;}}
+   if(p.ai.goal){p.ai.state=waterEscape?'EVADE_WATER':p.ai.refilling?'REFILL':prank?'PRANK':'SCORE';p.ai.path=s.obstacles.some(o=>segmentBox({x:p.p.x,y:.1,z:p.p.z},{x:p.ai.goal.x,y:.1,z:p.ai.goal.z},o,.65))||crossesPool(p.p,p.ai.goal,avoid)?this.route(p.p,p.ai.goal,avoid):[];if(avoid&&crossesPool(p.p,p.ai.goal,avoid)&&!p.ai.path.length){p.ai.goal=this.nodes.filter(n=>!crossesPool(p.p,n,avoid)).sort((a,b)=>Math.hypot(a.x-p.p.x,a.z-p.p.z)-Math.hypot(b.x-p.p.x,b.z-p.p.z))[0]||p.p;}}
   }
   if(p.ai.food&&!p.ai.food.active){p.ai.food=null;p.ai.nextThink=0;p.ai.path=[];}if(p.ai.boost&&!p.ai.boost.active){p.ai.boost=null;p.ai.nextThink=0;p.ai.path=[];}
   while(p.ai.path.length&&Math.hypot(p.p.x-p.ai.path[0].x,p.p.z-p.ai.path[0].z)<.7)p.ai.path.shift();const destination=p.ai.path[0]||p.ai.goal;if(!destination)return;
@@ -64,9 +80,9 @@ export class BotController{
   const target=s.players[p.ai.target],d=target?Math.hypot(target.p.x-p.p.x,target.p.z-p.p.z):Infinity;
   if(target&&d<BOT_CLOSE_AIM.distance){if(p.ai.closeTarget!==target.id){p.ai.closeTarget=target.id;p.ai.closeReady=s.time+BOT_CLOSE_AIM.reaction;p.ai.closeYaw=p.yaw;p.ai.closeSample=null;p.ai.nextCloseSample=s.time+BOT_CLOSE_AIM.reaction;}if(s.time>=p.ai.nextCloseSample){p.ai.closeSample={p:{...target.p},v:{...target.v}};p.ai.nextCloseSample=s.time+BOT_CLOSE_AIM.reaction;}const sample=p.ai.closeSample;if(sample){const desired=Math.atan2(p.p.x-sample.p.x,p.p.z-sample.p.z);p.ai.closeYaw+=clamp(angleDelta(desired,p.ai.closeYaw),-BOT_CLOSE_AIM.turnSpeed*dt,BOT_CLOSE_AIM.turnSpeed*dt);}}else{p.ai.closeTarget=null;p.ai.closeSample=null;}
 
-  if(!p.ai.refilling&&p.ai.seen&&target&&!target.dead&&d<25&&s.time>=p.ai.nextFire&&(d>=BOT_CLOSE_AIM.distance||s.time>=p.ai.closeReady)&&visible(s,p,target)){
+  if(!p.ai.refilling&&p.ai.seen&&target&&this.attackable(p,target)&&s.time>=p.ai.nextFire&&(d>=BOT_CLOSE_AIM.distance||s.time>=p.ai.closeReady)){
    const close=clamp(1-d/BOT_CLOSE_AIM.distance,0,1),aim=botAimPoint(s,p,p.ai.closeSample||target),origin=s.muzzle(p),error=(s.random()-.5)*(BOT_RULES.aimError+close*BOT_CLOSE_AIM.yawError),tx=aim.x-origin.x,tz=aim.z-origin.z,ty=aim.y-origin.y;
-   const aimYaw=Math.atan2(-tx,-tz),yaw=(close>0?p.ai.closeYaw+clamp(angleDelta(aimYaw,p.ai.closeYaw),-.12,.12):aimYaw)+error,pitch=clamp(Math.atan2(ty,Math.hypot(tx,tz))+(s.random()-.5)*(BOT_RULES.pitchError+close*BOT_CLOSE_AIM.pitchError),-Math.PI/3,Math.PI/3);s.fire(p.id,{x:-Math.sin(yaw)*Math.cos(pitch),y:Math.sin(pitch),z:-Math.cos(yaw)*Math.cos(pitch)});p.ai.nextFire=s.time+(BATTLE.fireInterval+s.random()*.18)/botAttackRate(s.stage.id,p.ai.playerLeads);
+   const aimYaw=Math.atan2(-tx,-tz),yaw=(close>0?p.ai.closeYaw+clamp(angleDelta(aimYaw,p.ai.closeYaw),-.12,.12):aimYaw)+error,pitch=clamp(Math.atan2(ty,Math.hypot(tx,tz))+(s.random()-.5)*(BOT_RULES.pitchError+close*BOT_CLOSE_AIM.pitchError),-Math.PI/3,Math.PI/3);s.fire(p.id,{x:-Math.sin(yaw)*Math.cos(pitch),y:Math.sin(pitch),z:-Math.cos(yaw)*Math.cos(pitch)});p.ai.nextFire=s.time+(BATTLE.fireInterval+s.random()*.18)/botAttackRate();
   }
  }
 }
