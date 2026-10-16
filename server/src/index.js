@@ -1,13 +1,13 @@
+import {createFriendRoom,healthInfo,joinAttempts,joinIP} from './friend-rooms.js';
 import {QuickMatcher} from './quick-match.js';
 import express from 'express';
 import http from 'node:http';
 import {createRequire} from 'node:module';
 import path from 'node:path';
-import {randomBytes} from 'node:crypto';
 import {Server,matchMaker} from '@colyseus/core';
 import {WebSocketTransport} from '@colyseus/ws-transport';
 import {BBBRoom,rooms} from './room.js';
-import {roomCode,privateRoomCode} from './session.js';
+import {roomCode} from './session.js';
 import {originPolicy,handleCors,corsHeaders,SERVICE_HEADER} from './origins.js';
 const app=express(),server=http.createServer(app),policy=originPolicy();
 const attempts=new Map(),reservedCodes=new Set();
@@ -19,11 +19,11 @@ matchMaker.controller.getCorsHeaders=req=>corsHeaders(req.headers?.origin,policy
 // Colyseus installs its own matchmaking HTTP handler before Express. Guard that handler too.
 const handlers=server.listeners('request').slice();server.removeAllListeners('request');
 server.on('request',(req,res)=>{if(!handleCors(req,res,policy))return;if(Number(req.headers['content-length']||0)>16384){res.writeHead(413);res.end();return;}let bytes=0;req.on('data',chunk=>{bytes+=chunk.length;if(bytes>16384)req.destroy();});for(const handler of handlers)handler.call(server,req,res);});
-app.get('/health',(_req,res)=>res.status(200).json({ok:true,version:1}));
+app.get('/health',(_req,res)=>res.set('Cache-Control','no-store').status(200).json(healthInfo()));
 app.get('/sdk/colyseus.js',(_req,res)=>{const require=createRequire(import.meta.url);res.sendFile(path.join(path.dirname(require.resolve('colyseus.js/package.json')),'dist','colyseus.js'));});
-app.post('/rooms',async(req,res)=>{const now=Date.now();for(const [key,v] of attempts)if(v.until<now)attempts.delete(key);const ip=req.socket.remoteAddress,entry=attempts.get(ip)||{count:0,until:now+60000};entry.count++;attempts.set(ip,entry);if(entry.count>5||attempts.size>2000)return res.status(429).json({error:'しばらく待ってから作成してください'});if(rooms.size>=32)return res.status(503).json({error:'サーバーが混雑しています'});let code;try{code=privateRoomCode(new Set([...rooms.keys(),...reservedCodes]));}catch{return res.status(503).json({error:'空きコードがありません。時間を置いて再試行してください'});}reservedCodes.add(code);const ticket=randomBytes(24).toString('hex');try{const room=await matchMaker.createRoom('bbb',{code,ticket});res.json({code,roomId:room.roomId,ticket});}catch{res.status(503).json({error:'ルームを作成できませんでした'});}finally{reservedCodes.delete(code);}});
+app.post('/rooms',async(req,res)=>{const now=Date.now();for(const [key,v] of attempts)if(v.until<now)attempts.delete(key);const ip=req.socket.remoteAddress,entry=attempts.get(ip)||{count:0,until:now+60000};entry.count++;attempts.set(ip,entry);if(entry.count>5||attempts.size>2000)return res.status(429).json({error:'しばらく待ってから作成してください'});if(rooms.size>=32)return res.status(503).json({error:'サーバーが混雑しています'});try{res.json(await createFriendRoom(rooms,reservedCodes,options=>matchMaker.createRoom('bbb',options)));}catch{res.status(503).json({error:'空きコードがないか、ルームを作成できませんでした。時間を置いて再試行してください'});}});
 const quickMatcher=new QuickMatcher({list:()=>rooms.values(),create:async()=>{if(rooms.size>=32)throw new Error('サーバーが混雑しています');let code;do{code=roomCode();}while(rooms.has(code)||reservedCodes.has(code));reservedCodes.add(code);try{await matchMaker.createRoom('bbb',{code,quick:true});return rooms.get(code);}finally{reservedCodes.delete(code);}},reserve:(room,options)=>matchMaker.joinById(room.roomId,{...options,code:room.session.code})});
 app.post('/quick-match',async(req,res)=>{const now=Date.now(),ip='quick:'+req.socket.remoteAddress;for(const [key,v]of attempts)if(v.until<now)attempts.delete(key);const entry=attempts.get(ip)||{count:0,until:now+60000};attempts.set(ip,entry);if(++entry.count>12||attempts.size>2000)return res.status(429).json({error:'しばらく待ってから再試行してください'});try{const reservation=await quickMatcher.join({name:req.body?.name,character:req.body?.character,profile:req.body?.profile});res.json(reservation);}catch(error){res.status(503).json({error:'マッチングできませんでした。時間を置いて再試行してください。'});}});
-app.get('/rooms/:code',(req,res)=>{const code=req.params.code.toUpperCase();if(!/^\d{2}$/.test(code))return res.status(400).json({error:'2桁数字のルームコードを入力してください'});const room=rooms.get(code);if(!room||room.session.quick)return res.status(404).json({error:'ルームが見つかりません'});if(room.session.phase!=='LOBBY')return res.status(409).json({error:'対戦は開始済みです'});if(room.session.members.size>=4)return res.status(409).json({error:'ルームは満員です'});res.json({code,roomId:room.roomId});});
+app.get('/rooms/:code',(req,res)=>{if(!joinAttempts.allow(joinIP(req.headers,req.socket.remoteAddress)))return res.status(429).json({error:'参加試行が多すぎます。1分ほど待って再試行してください'});const code=req.params.code;if(!/^\d{2}$/.test(code))return res.status(400).json({error:'2桁数字のルームコードを入力してください'});const room=rooms.get(code);if(!room||room.session.quick)return res.status(404).json({error:'ルームが見つかりません'});if(room.session.phase!=='LOBBY')return res.status(409).json({error:'対戦は開始済みです'});if(room.session.members.size>=4)return res.status(409).json({error:'ルームは満員です'});res.json({code,roomId:room.roomId});});
 app.use((err,_req,res,_next)=>res.status(400).json({error:'リクエストを処理できませんでした'}));
 const port=Number(process.env.PORT||2567);console.info('[BBB origins]',JSON.stringify({production:policy.production,allowed:[...policy.origins]}));await game.listen(port,'0.0.0.0');console.log(`BBB server listening on port ${port}`);

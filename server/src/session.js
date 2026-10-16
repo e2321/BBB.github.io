@@ -3,10 +3,10 @@ import {matchReport} from '../../match-records.js';
 import {QUICK_WAIT_SECONDS} from './quick-match.js';
 import {characterId} from '../../seafood-settings.js';
 import {ACCENTS,validMaxHP,DEFAULT_MAX_HP} from '../../battle-rules.js';
-import {randomBytes} from 'node:crypto';
+import {randomBytes,randomInt} from 'node:crypto';
 import {BattleSimulation} from '../../battle-simulation.js';
 export const roomCode=()=>{const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return [...randomBytes(6)].map(n=>chars[n%32]).join('');};
-export function privateRoomCode(occupied){const start=randomBytes(2).readUInt16LE()%100;for(let i=0;i<100;i++){const code=String((start+i)%100).padStart(2,'0');if(!occupied.has(code))return code;}throw new Error('ルームコードが満杯です');}
+export function privateRoomCode(occupied){const start=randomInt(100);for(let i=0;i<100;i++){const code=String((start+i)%100).padStart(2,'0');if(!occupied.has(code))return code;}throw new Error('ルームコードが満杯です');}
 export function playerName(value,fallback){if(typeof value!=='string')return fallback;return Array.from(value.replace(/[\p{Cc}\p{Cf}]/gu,'').trim()).slice(0,12).join('')||fallback;}
 // Pure room rules: the Colyseus adapter owns authenticated connections, never the client payload.
 export class Session{
