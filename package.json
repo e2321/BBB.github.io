@@ -17,7 +17,8 @@
     "prepare:submission": "npm run build && npm run check:pages",
     "server:install": "npm --prefix server install",
     "server:dev": "npm --prefix server run dev",
-    "test:online": "npm --prefix server test"
+    "test:online": "npm --prefix server test",
+    "dev:all": "node tools/dev-all.mjs"
   },
   "dependencies": {
     "three": "0.180.0"

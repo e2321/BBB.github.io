@@ -1,0 +1,7 @@
+// Expiration is independent of CSS: reduced motion must never leave notices behind.
+export class BPNotifications{
+ constructor(host,{limit=4,lifetime=850,now=()=>performance.now(),schedule=setTimeout,cancel=clearTimeout}={}){Object.assign(this,{host,limit,lifetime,now,schedule,cancel});this.items=[];this.seen=new Set();this.serial=0;}
+ show(delta,multiplier=1,key){if(!this.host||!Number.isFinite(delta))return false;if(key!==undefined){if(this.seen.has(key))return false;this.seen.add(key);if(this.seen.size>64)this.seen.delete(this.seen.values().next().value);}while(this.items.length>=this.limit)this.items.shift().el.remove();const el=this.host.ownerDocument.createElement('strong');el.className='bp-float'+(delta<0?' loss':'');el.textContent=`${delta>=0?'+':''}${delta} BP`;el.style.fontSize=`${22+Math.min(4,Math.max(0,multiplier-1))*9}px`;el.style.marginLeft=`${(++this.serial%5-2)*24}px`;this.host.append(el);this.items.push({el,until:this.now()+this.lifetime});this.arm();return true;}
+ arm(){this.cancel(this.timer);this.timer=undefined;if(this.items.length)this.timer=this.schedule(()=>{this.timer=undefined;const now=this.now();while(this.items.length&&this.items[0].until<=now)this.items.shift().el.remove();this.arm();},Math.max(0,this.items[0].until-this.now()));}
+ clear(){this.cancel(this.timer);this.timer=undefined;for(const item of this.items)item.el.remove();this.items.length=0;this.seen.clear();this.host?.replaceChildren();}
+}
