@@ -84,3 +84,32 @@ body.mobile-ui .bp-float{font-size:22px}
 #mobileBP{position:absolute;left:var(--edge-l);bottom:calc(var(--edge-b) + 104px);padding:4px 8px;border-radius:8px;background:#103541e8;color:#ffe29a;font-size:16px;font-weight:900;pointer-events:none;max-width:110px}body.mobile-ui[data-mode=TUTORIAL] #mobileBP{display:none}
 
 body.mobile-ui[data-state=PAUSED] #tutorialHUD,body.mobile-ui[data-state=PAUSED] #tutorialTools,body.mobile-ui[data-state=PAUSED] #tutorialSkip{display:none!important}
+/* Mobile settings never participate in the desktop layout. */
+.mobile-settings-open,#mobileSettings,#mobileLayoutEditor,#mobileSafeArea{display:none}
+body.mobile-ui .mobile-settings-open{display:inline-block}
+body.mobile-ui #mobileSettings:not([hidden]),body.mobile-ui #mobileLayoutEditor:not([hidden]){display:block;position:fixed;inset:0;z-index:70;background:#0b2534ee;color:#fff4d8;overscroll-behavior:contain;touch-action:none}
+body.mobile-ui #mobileSettings:not([hidden]){overflow:auto;touch-action:pan-y;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));box-sizing:border-box}
+.mobile-settings-card{max-width:480px;margin:auto;padding:12px 18px;border:1px solid #77b8c0;border-radius:16px;background:#153f4c}
+.mobile-settings-card h2{font-size:20px;margin:4px 0 12px}.mobile-settings-card p{font-size:12px;line-height:1.5;margin:8px 0}.mobile-settings-card label{display:block;font-size:15px}
+body.mobile-ui #mobileSettings input,body.mobile-ui #mobileLayoutEditor input{display:block;width:100%;min-height:34px;touch-action:auto;accent-color:#f2c96f}
+body.mobile-ui #mobileSettings button,body.mobile-ui .mobile-layout-tools button{min-height:44px;padding:8px 12px;font-size:13px;letter-spacing:0;border-radius:9px;margin:3px;background:#275564;color:#fff2c4;border:1px solid #83bdc7}
+.mobile-layout-tools{position:absolute;top:max(8px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(460px,calc(100% - 32px));box-sizing:border-box;padding:8px;background:#163c4ce8;border:1px solid #83bdc7;border-radius:12px;text-align:center;z-index:2;font-size:12px;touch-action:pan-y;max-height:45dvh;overflow:auto}
+.mobile-layout-tools strong{font-size:14px}.mobile-layout-tools small{font-size:10px}.mobile-layout-tools label{display:block}
+#mobileLayoutEditor [data-layout-button]{position:fixed;touch-action:none;user-select:none;border:2px solid #83bdc7;border-radius:50%;background:#235466;color:#fff3cf;font-weight:bold;padding:4px;box-sizing:border-box}
+#mobileLayoutEditor [data-layout-button=bitan]{background:#b8934b;color:#142f3c}
+#mobileLayoutEditor [data-layout-button=view]{border-radius:10px}
+#mobileLayoutEditor [data-layout-button].selected{outline:3px solid #ffde7e;outline-offset:3px}
+#mobileSafeArea{position:fixed;inset:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+body.mobile-ui #mobileSafeArea{display:block}
+body.mobile-ui #overlay>.settings{flex-wrap:wrap}
+body.mobile-ui #tutorialHUD{padding:6px 8px;max-height:min(32dvh,calc(100dvh - 220px));overflow-wrap:anywhere}
+body.mobile-ui #tutorialStepName{font-size:12px!important;line-height:1.25}
+body.mobile-ui #tutorialInstruction{font-size:clamp(12px,1.6vw,14px)!important;line-height:1.35}
+body.mobile-ui #tutorialDetail,body.mobile-ui #tutorialProgress{font-size:12px!important;line-height:1.35}
+body.mobile-ui #tutorialStatus,body.mobile-ui #tutorialView{font-size:11px!important}
+body.mobile-ui #tutorialHUD p{margin:2px 0}
+@media(max-height:360px) and (orientation:landscape){body.mobile-ui #tutorialHUD{max-height:calc(100dvh - 205px)}.mobile-layout-tools{padding:4px;font-size:11px}.mobile-layout-tools small{display:none}}
+body.mobile-ui #mobileControls .mobile-toolbar{right:calc(var(--edge-r) + 68px)}
+body.mobile-ui #tutorialHUD{left:var(--touch-tutorial-left,124px);right:auto;top:var(--touch-tutorial-top,48px);width:var(--touch-tutorial-width,calc(100vw - 304px));max-height:var(--touch-tutorial-height,110px);box-sizing:border-box}
+body.mobile-ui #tutorialTools{left:var(--touch-tutorial-left,124px);right:auto;top:calc(var(--touch-tutorial-top,48px) + var(--touch-tutorial-height,110px) + 6px);bottom:auto;width:var(--touch-tutorial-width,calc(100vw - 304px))}
+body.mobile-ui #tutorialSkip{left:var(--touch-tutorial-left,124px);right:auto;top:calc(var(--touch-tutorial-top,48px) + var(--touch-tutorial-height,110px) + 58px);bottom:auto;min-height:34px}
