@@ -49,7 +49,8 @@ export const NORMAL_FLOP_SPEED=.85;
 export const RAINBOW_FLOP_SPEED=1.5;
 // Human fire interval: 0.48s -> 0.42s (-12.5%). CPU baseline remains 0.60s.
 export const PLAYER_KNIFE_COOLDOWN_MULTIPLIER=.7;
-export const knifeFireInterval=player=>BATTLE.fireInterval*(player.bot?1:PLAYER_KNIFE_COOLDOWN_MULTIPLIER);
+export const AUTO_KNIFE_INTERVAL=1;
+export const knifeFireInterval=player=>Math.max(BATTLE.fireInterval*(player.bot?1:PLAYER_KNIFE_COOLDOWN_MULTIPLIER),!player.bot&&player.autoFire?AUTO_KNIFE_INTERVAL:0);
 
 export const DEFAULT_MAX_HP=3;
 export const validMaxHP=n=>typeof n==='number'&&Number.isInteger(n)&&n>=1&&n<=4;
