@@ -22,3 +22,11 @@ test('mobile settings persist sensitivity/layout, cancel edits and preserve rela
  await page.locator('#mobileEditLayout').tap();await page.locator('#mobileLayoutReset').tap();await page.locator('#mobileLayoutCancel').tap();expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('bbb.mobileControls.v1')))).toEqual(saved);
  await page.reload();await page.locator('#overlay [data-open-mobile-settings]').tap();await expect(page.locator('#mobileSensitivity')).toHaveValue('2');await page.locator('#mobileEditLayout').tap();await page.setViewportSize({width:390,height:844});const box=await b.boundingBox();expect(box.x).toBeGreaterThanOrEqual(0);expect(box.y).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(390);expect(box.y+box.height).toBeLessThanOrEqual(844);
 });
+
+
+test('mobile has no jump control, can enable auto fire and retains the manual water tutorial exercise',async({page})=>{
+ await ready(page);await expect(page.locator('[data-mobile-action=jump]')).toHaveCount(0);
+ await page.locator('[data-mobile-action=menu]').tap();await page.locator('#battlePause [data-open-mobile-settings]').tap();await page.locator('#mobileAutoFire').check();await page.locator('#mobileSettingsClose').tap();await page.locator('#battleContinue').tap();await expect(page.locator('#mobileAutoStatus')).toBeVisible();await expect(page.locator('#mobileAttack')).toBeHidden();
+ await page.evaluate(()=>{const b=window.__game.battle;while(b.tutorial.phase<3)b.tutorial.next();b.events();b.sim.projectiles.forEach(k=>k.active=false);b.sim.players[0].nextFire=0;});await expect.poll(()=>page.evaluate(()=>window.__game.battle.sim.projectiles.some(k=>k.active))).toBe(true);
+ await page.locator('[data-mobile-action=menu]').tap();await page.locator('#battlePause [data-open-mobile-settings]').tap();await page.locator('#mobileAutoFire').uncheck();await page.locator('#mobileSettingsClose').tap();await page.locator('#battleContinue').tap();await expect(page.locator('#mobileAttack')).toBeVisible();await expect(page.locator('#mobileAutoStatus')).toBeHidden();
+});

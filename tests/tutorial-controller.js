@@ -10,7 +10,6 @@ export function runTutorial(sim,c,{maxSteps=18000,onStep=()=>{},reactionDelay=0,
    if(c.phase===1){if(p.inWater)sim.swim(0,false);else moveTo(sim.puddles[0]);}
    if(c.phase===2){if(!c.blockedTried){if(p.inWater){sim.fire(0);c.blockedAttack();}else moveTo(sim.puddles[0]);}else if(p.inWater)moveTo(sim.stage.practiceStart);else shoot({x:p.p.x,y:p.p.y,z:p.p.z-3});}
    if(c.phase===3){if(!c.tpsShot){c.setView('TPS');shoot(sim.players[1].p);}else if(!c.fpsSeen)c.setView('FPS');else if(!c.fpsHit){c.setView('FPS');shoot(sim.players[1].p);}else c.setView('TPS');}
-   if(phase===4&&p.grounded)sim.jump(0,'Space');
   }
   sim.step();c.consume(sim.events);sim.events.length=0;onStep(sim,c,i);
  }

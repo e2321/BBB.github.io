@@ -14,10 +14,10 @@ test('CPU is modestly reduced from saved historical cadence, aim and turning',()
  for(const fragment of ['s.time+.16','-3.0*dt,3.0*dt','s.time+.13+p.id*.035+s.random()*.045','(s.random()-.5)*.09','(s.random()-.5)*.06','s.time+BATTLE.fireInterval+s.random()*.18','p.water<45'])assert.ok(source.includes(fragment),fragment);
  assert.deepEqual(BOT_RULES,{accelerationEfficiency:.9,scoreEfficiency:.9,thinkInterval:.2,attackRate:.85,aimError:.12,pitchError:.08,jumpInterval:.15,jumpJitter:.045,turnSpeed:2.8,refillThreshold:45});
 });
-test('both stages share flat one-percent flops and two-percent Space while all combo multipliers remain',()=>{
- for(const stage of ['normal','kitchen'])for(const bot of [false,true])for(const combo of [0,2,4,6,9,19,29])for(const key of ['A','Space']){
+test('both stages share flat one-percent A/D flops while all combo multipliers remain',()=>{
+ for(const stage of ['normal','kitchen'])for(const bot of [false,true])for(const combo of [0,2,4,6,9,19,29])for(const key of ['A','D']){
   const s=new BattleSimulation(23,stage);s.start();const p=s.players[0];p.bot=bot;p.p={x:0,y:.28,z:-6};p.combo=combo;p.lastComboLanding=0;
-  s.jump(0,key);assert.equal(p.water,key==='Space'?98:99);assert.equal(p.points,0);p.grounded=true;s.scoreLanding(p);const multiplier=p.combo>=30?3:p.combo>=20?2.5:p.combo>=10?2:p.combo>=5?1.5:1;assert.equal(p.points,Math.round(10*multiplier*(bot?.9:1)));
+  s.jump(0,key);assert.equal(p.water,99);assert.equal(p.points,0);p.grounded=true;s.scoreLanding(p);const multiplier=p.combo>=30?3:p.combo>=20?2.5:p.combo>=10?2:p.combo>=5?1.5:1;assert.equal(p.points,Math.round(10*multiplier*(bot?.9:1)));
  }
  assert.equal(FLOP_RULES.waterRecovery,20);
 });

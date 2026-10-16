@@ -6,7 +6,6 @@ body.mobile-ui #mobileControls:not([hidden]){display:block;position:fixed;inset:
 #mobileControls .unavailable{opacity:.55;border-style:dashed}
 #mobileBitan{left:var(--edge-l);bottom:var(--edge-b);width:96px;height:96px;font-size:22px!important;background:#b8934be8!important;border-color:#fff0b9!important;color:#152f3b!important}
 #mobileAttack{right:var(--edge-r);bottom:var(--edge-b);width:82px;height:82px}
-#mobileJump{right:calc(var(--edge-r) + 96px);bottom:var(--edge-b);width:68px;height:68px;font-size:12px!important}
 #mobileControls .mobile-toolbar{position:absolute;right:var(--edge-r);bottom:calc(var(--edge-b) + 104px);display:flex;gap:7px;pointer-events:auto}
 #mobileControls .mobile-toolbar button{position:static;min-width:48px;min-height:44px;border-radius:10px;font-size:11px}
 body.mobile-ui #mobilePortrait:not([hidden]){display:block;position:fixed;left:12px;right:12px;top:max(8px,env(safe-area-inset-top));z-index:45;background:#123843ed;border:1px solid #ffe29c;padding:9px;text-align:center;color:#fff0c2;pointer-events:none;font-size:16px;font-weight:800}
@@ -113,3 +112,7 @@ body.mobile-ui #mobileControls .mobile-toolbar{right:calc(var(--edge-r) + 68px)}
 body.mobile-ui #tutorialHUD{left:var(--touch-tutorial-left,124px);right:auto;top:var(--touch-tutorial-top,48px);width:var(--touch-tutorial-width,calc(100vw - 304px));max-height:var(--touch-tutorial-height,110px);box-sizing:border-box}
 body.mobile-ui #tutorialTools{left:var(--touch-tutorial-left,124px);right:auto;top:calc(var(--touch-tutorial-top,48px) + var(--touch-tutorial-height,110px) + 6px);bottom:auto;width:var(--touch-tutorial-width,calc(100vw - 304px))}
 body.mobile-ui #tutorialSkip{left:var(--touch-tutorial-left,124px);right:auto;top:calc(var(--touch-tutorial-top,48px) + var(--touch-tutorial-height,110px) + 58px);bottom:auto;min-height:34px}
+
+#mobileAutoStatus{position:fixed;pointer-events:none;width:88px;box-sizing:border-box;padding:7px 4px;text-align:center;border:1px solid #b6eeb9;border-radius:8px;background:#184732dd;color:#c6ffd0;font-size:12px;font-weight:bold}
+#mobileAutoStatus[hidden],#mobileControls button[hidden]{display:none!important}
+body.mobile-ui #mobileSettings #mobileAutoFire{display:inline-block;width:22px;min-height:22px;height:22px;vertical-align:middle;margin:10px 6px 10px 0}

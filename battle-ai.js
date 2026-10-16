@@ -56,7 +56,7 @@ export class BotController{
    }
    p.ai.nextPrank??=10+p.id*4;if(s.time>=p.ai.nextPrank){p.ai.nextPrank=s.time+25+p.id*3;const c=s.chefs.find(c=>s.chefController.rewardReady(c,p)&&Math.hypot(c.x-p.p.x,c.z-p.p.z)<5);if(c&&p.water>65&&s.random()<.25){p.ai.prankChef=c.id;p.ai.prankUntil=s.time+7;}}
    const c=s.chefs.find(c=>c.id===p.ai.prankChef);if(c&&s.time<p.ai.prankUntil){if(p.feigning){if(c.target===p.id&&c.unguarded){p.ai.prankDecision??=s.random();if(!p.ai.hideUntil||p.ai.prankDecision<.45){s.jump(p.id,p.inputKey==='A'?'D':'A');p.ai.prankChef=null;p.ai.hideUntil=0;p.ai.prankDecision=null;}}return;}if(p.grounded&&Math.hypot(c.x-p.p.x,c.z-p.p.z)<1.2){s.feign(p.id);return;}}
-   else if(p.feigning){s.jump(p.id,'Space');p.ai.prankChef=null;p.ai.hideUntil=0;p.ai.prankDecision=null;return;}
+   else if(p.feigning){s.releaseFeign(p);p.ai.prankChef=null;p.ai.hideUntil=0;p.ai.prankDecision=null;return;}
   }
   if(!waterEscape&&p.water<(p.combo>=25?BOT_COMBO_RULES.refillThreshold:BOT_RULES.refillThreshold))p.ai.refilling=true;if(p.water>=80)p.ai.refilling=false;
   if(s.time>=p.ai.nextThink){

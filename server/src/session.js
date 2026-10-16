@@ -24,7 +24,6 @@ export class Session{
   m.tokens=Math.min(60,m.tokens+Math.max(0,now-m.refilledAt)*.09);m.refilledAt=now;if(m.tokens<1)return false;m.tokens--;m.seq=data.seq;
   const s=this.sim,p=s.players[m.slot];p.inputSeq=data.seq;if(data.phase&&data.phase!==s.state)return false;
   if(data.kind==='flop'&&['A','D'].includes(data.key))return s.jump(m.slot,data.key);
-  if(data.kind==='jump')return s.jump(m.slot,'Space');
   if(data.kind==='aim'&&Number.isFinite(data.yaw)&&Math.abs(data.yaw)<100000&&Number.isFinite(data.pitch)&&Math.abs(data.pitch)<=Math.PI/3){s.aim(m.slot,data.yaw,data.pitch);return true;}
   if(data.kind==='swim'&&typeof data.enabled==='boolean')return s.swim(m.slot,data.enabled);
   if(data.kind==='fire'){const d=data.direction;if(!d||Object.keys(d).length!==3||!['x','y','z'].every(k=>Number.isFinite(d[k])&&Math.abs(d[k])<=1.01)||Math.hypot(d.x,d.y,d.z)<.9)return false;return s.fire(m.slot,d);}

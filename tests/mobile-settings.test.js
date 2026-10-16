@@ -9,9 +9,11 @@ test('mobile defaults use a faster base than 0.85 and safely reject corrupt save
  const storage={setItem:(k,v)=>saved=v,getItem:()=>saved};assert.equal(saveSettings(storage,input),true);assert.deepEqual(loadSettings(storage),input);
 });
 test('relative button positions and touch hit sizes remain inside safe areas after portrait/landscape resize',()=>{
- for(const [w,h]of [[844,390],[390,844],[568,320]])for(const scale of [.7,1,1.5])for(const key of ['bitan','jump','attack','view'])for(const [x,y]of [[0,0],[1,1],[.4,.7]]){
+ for(const [w,h]of [[844,390],[390,844],[568,320]])for(const scale of [.7,1,1.5])for(const key of ['bitan','attack','view'])for(const [x,y]of [[0,0],[1,1],[.4,.7]]){
   const r=buttonRect(key,{x,y,scale},w,h,{left:44,right:44,top:8,bottom:24});
   assert.ok(r.x-r.size/2>=44-.0001);assert.ok(r.x+r.size/2<=w-44+.0001);assert.ok(r.y-r.size/2>=8-.0001);assert.ok(r.y+r.size/2<=h-24+.0001);
  }
  const large=buttonRect('bitan',{x:.5,y:.5,scale:1.5},844,390);assert.equal(large.size,144);
 });
+
+test('old saved jump settings are ignored while valid positions, sensitivity and auto-fire persist',()=>{const old={sensitivity:1.8,autoFire:true,buttons:{jump:{x:.8,y:.9,scale:1.5},attack:{x:.7,y:.8,scale:1.2}}};const valid=validateSettings(old);assert.equal(valid.autoFire,true);assert.equal(valid.sensitivity,1.8);assert.deepEqual(valid.buttons.attack,old.buttons.attack);assert.equal('jump' in valid.buttons,false);assert.equal(defaults().autoFire,false);assert.equal(validateSettings({autoFire:'true'}).autoFire,false);});

@@ -1,6 +1,6 @@
 // Height and horizontal travel are independently tunable; frequency preserves the apex.
-export const BATTLE={duration:90,size:30,players:4,hp:4,fishLength:1.5,bodyRadius:.27,bodyHalfLength:.46,bodyY:.28,jumpDuration:.5,jumpHeight:1.26,spaceJumpHeight:1.26,jumpDistance:1.2,jumpSpeed:8.4,gravity:33.6,walkSpeed:2.4,buffer:.4,fireInterval:.6,knifeSpeed:14,knifeRadius:.065,respawn:4,invincible:1};
-export const FLOP_RULES={landingPoints:10,jumpWaterCost:1,spaceWaterCost:2,lowWaterThreshold:10,lowWaterPenalty:10,comboWindow:1.5,absorbRate:.05,waterRecovery:20,minStrength:.60,maxAcceleration:1,accelerationDecay:.55,maxFrequencyMultiplier:2.1,inputMinInterval:.06,swimSpeed:3.2,waterHysteresis:.07};
+export const BATTLE={duration:90,size:30,players:4,hp:4,fishLength:1.5,bodyRadius:.27,bodyHalfLength:.46,bodyY:.28,jumpDuration:.5,jumpHeight:1.26,jumpDistance:1.2,jumpSpeed:8.4,gravity:33.6,walkSpeed:2.4,buffer:.4,fireInterval:.6,knifeSpeed:14,knifeRadius:.065,respawn:4,invincible:1};
+export const FLOP_RULES={landingPoints:10,jumpWaterCost:1,lowWaterThreshold:10,lowWaterPenalty:10,comboWindow:1.5,absorbRate:.05,waterRecovery:20,minStrength:.60,maxAcceleration:1,accelerationDecay:.55,maxFrequencyMultiplier:2.1,inputMinInterval:.06,swimSpeed:3.2,waterHysteresis:.07};
 export const ACCENTS=['#388cff','#ef5964','#4fcb79','#f4cf45'];
 export const PUDDLES=[{x:-12,z:-4,radius:1.55},{x:12,z:4,radius:1.55},{x:5.5,z:13,radius:1.55}];
 export const JUMP_STRENGTH_CURVE=[[0,.60],[10,.75],[20,.85],[30,.90],[50,.95],[75,.98],[100,1]];
@@ -44,10 +44,11 @@ export const COUNTDOWN_RULES={duration:3,flopPeriod:.42,flopHeight:.18,botPeriod
 
 export const RAINBOW_LANDING_BP=50;
 
-// BBB A/D cycles and travel speed; Space and tutorial motion keep their existing pace.
+// BBB A/D cycles and travel speed; tutorial motion keeps its existing pace.
 export const NORMAL_FLOP_SPEED=.85;
 export const RAINBOW_FLOP_SPEED=1.5;
-export const PLAYER_KNIFE_COOLDOWN_MULTIPLIER=.8;
+// Human fire interval: 0.48s -> 0.42s (-12.5%). CPU baseline remains 0.60s.
+export const PLAYER_KNIFE_COOLDOWN_MULTIPLIER=.7;
 export const knifeFireInterval=player=>BATTLE.fireInterval*(player.bot?1:PLAYER_KNIFE_COOLDOWN_MULTIPLIER);
 
 export const DEFAULT_MAX_HP=3;

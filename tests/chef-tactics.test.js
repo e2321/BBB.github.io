@@ -22,7 +22,7 @@ test('countdown freezes all authoritative game state and accepts only cosmetic a
   assert.ok(s.players.every(p=>p.water===100&&p.points===0&&p.combo===0&&p.hp===BATTLE.hp&&p.boostUntil===0&&!p.feigning));assert.ok(s.boosts.every(b=>b.active));assert.ok(s.projectiles.every(k=>!k.active));
   assert.ok(s.events.some(e=>e.type==='warmupLand'));advance(s,.01);assert.equal(s.state,'PLAYING');assert.equal(s.time,0);
   assert.deepEqual(s.events.filter(e=>e.type==='countdown').map(e=>e.value),[3,2,1,0]);assert.equal(s.events.filter(e=>e.type==='matchStart').length,1);
-  assert.ok(s.players.every(p=>!p.buffer&&!p.inputKey&&p.acceleration===0&&p.slideUntil===0));s.step();assert.ok(s.time>0);assert.equal(s.jump(0,'Space'),true);assert.equal(s.players[0].water,98);
+  assert.ok(s.players.every(p=>!p.buffer&&!p.inputKey&&p.acceleration===0&&p.slideUntil===0));s.step();assert.ok(s.time>0);assert.equal(s.jump(0,'A'),true);assert.equal(s.players[0].water,99);
  }
 });
 test('three-second countdown is independent of update frequency and leaves the full ninety seconds',()=>{
@@ -34,7 +34,7 @@ test('two chefs chase the closest visible live fish including a CPU and remain o
 });
 test('chef attacks have a visible windup, one damage and a cooldown; jump, retreat and equipment can evade',()=>{
  for(const scenario of ['hit','jump','retreat','wall']){const s=game(),c=s.chefs[0],p=s.players[0];s.updateFeign=()=>{};p.p={x:c.x,y:.28,z:c.z+1};c.nextAttack=0;s.step();assert.equal(c.state,'ATTACKING');advance(s,.4);assert.equal(p.hp,BATTLE.hp);
-  if(scenario==='jump'){s.jump(0,'Space');}if(scenario==='retreat')p.p.z+=3;if(scenario==='wall')s.obstacles.push({min:{x:c.x-1,y:0,z:c.z+.3},max:{x:c.x+1,y:2,z:c.z+.5}});
+  if(scenario==='jump'){s.jump(0,'A');}if(scenario==='retreat')p.p.z+=3;if(scenario==='wall')s.obstacles.push({min:{x:c.x-1,y:0,z:c.z+.3},max:{x:c.x+1,y:2,z:c.z+.5}});
   advance(s,.36);assert.equal(p.hp,scenario==='hit'?BATTLE.hp-1:BATTLE.hp,scenario);if(scenario==='hit'){assert.ok(s.time-c.lastThrow<1/60);advance(s,2);assert.equal(p.hp,BATTLE.hp-1);}
  }
 });

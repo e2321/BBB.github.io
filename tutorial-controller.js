@@ -4,12 +4,12 @@ export const TUTORIAL_ROUTE=[[-4.2,2.5],[-4.2,-.5],[4.2,-.5],[4.2,-4.5],[-4.2,-4
 export const TUTORIAL_INTRO=['ここは、魚たちがビタンビタンする世界。','普通の対戦ゲームだと思った？','BBBの主役は、攻撃じゃない。','ビタンビタンだ！！'];
 export const TUTORIAL_GOALS=Object.freeze({introSeconds:4.4,flops:4,recovery:15,challengeCombo:8,challengeBP:100});
 export const TUTORIAL_STEPS=[
- {id:'bitan',name:'1 / 6 ビタンビタンが主役！',text:'AとDを交互に押して、ビタンビタン！',detail:'続けるほどコンボがつながる！ 着地でBPを稼ごう。'},
- {id:'water',name:'2 / 6 水分を取り戻そう',text:'ビタンビタンすると水分が減る！',detail:'マウスで青い水たまりへ向き、A / Dで進もう。入ったらキーを離して回復！'},
- {id:'tradeoff',name:'3 / 6 水たまりは万能じゃない',text:'水たまりの中で、左クリックを試そう。',detail:'回復するか、外に出て戦うか。判断が大事！'},
- {id:'attack',name:'4 / 6 攻撃はビタンビタンの妨害',text:'TPSで練習CPUを狙い、左クリック！',detail:'倒す必要はない。まずは三人称視点で狙ってみよう。'},
- {id:'jump',name:'5 / 6 ジャンプは回避の切り札',text:'水たまりの外でSpaceを押して、1回着地しよう！',detail:'ジャンプにも水分が2%必要！ ビタンビタンと使い分けよう。'},
- {id:'challenge',name:'6 / 6 BBBチャレンジ',text:'A / Dで8コンボ＆100 BP！ 倒さなくてもクリア！',detail:'大切なのは、自分がビタンビタンし続けること！ 必要なら水たまりへ。'},
+ {id:'bitan',name:'1 / 5 ビタンビタンが主役！',text:'AとDを交互に押して、ビタンビタン！',detail:'続けるほどコンボがつながる！ 着地でBPを稼ごう。'},
+ {id:'water',name:'2 / 5 水分を取り戻そう',text:'ビタンビタンすると水分が減る！',detail:'マウスで青い水たまりへ向き、A / Dで進もう。入ったらキーを離して回復！'},
+ {id:'tradeoff',name:'3 / 5 水たまりは万能じゃない',text:'水たまりの中で、左クリックを試そう。',detail:'回復するか、外に出て戦うか。判断が大事！'},
+ {id:'attack',name:'4 / 5 攻撃はビタンビタンの妨害',text:'TPSで練習CPUを狙い、左クリック！',detail:'倒す必要はない。まずは三人称視点で狙ってみよう。'},
+ null, // Reserved legacy phase ID; independent jump practice has been removed.
+ {id:'challenge',name:'5 / 5 BBBチャレンジ',text:'A / Dで8コンボ＆100 BP！ 倒さなくてもクリア！',detail:'大切なのは、自分がビタンビタンし続けること！ 必要なら水たまりへ。'},
 ];
 export class TutorialController{
  constructor(sim){this.sim=sim;this.reset();}
@@ -21,7 +21,7 @@ export class TutorialController{
  place(position){const p=this.sim.players[0];Object.assign(p.p,position);Object.assign(p.prev,position);Object.assign(p.v,{x:0,y:0,z:0});Object.assign(p,{grounded:true,buffer:null,lastJump:-10,jumpStart:-10,lastKey:'',inputKey:'',acceleration:0,feigning:false,still:0,inWater:false,yaw:0,desiredYaw:0,aimActive:true,slideUntil:0});p.surpriseWindows=[];this.sim.updateWet(p);}
  announce(message,seconds=2){this.feedback=message;this.feedbackUntil=this.sim.time+seconds;this.sim.emit('tutorialFeedback',{message});}
  begin(){if(this.phase===-1)this.next();}
- next(){if(this.complete)return;const s=this.sim,p=s.players[0];this.phase++;s.tutorialPhase=TUTORIAL_STEPS[this.phase].id;this.phaseStart=s.time;this.times.push(s.time);p.buffer=null;p.slideUntil=0;
+ next(){if(this.complete)return;const s=this.sim,p=s.players[0];this.phase++;if(this.phase===4)this.phase=5;s.tutorialPhase=TUTORIAL_STEPS[this.phase].id;this.phaseStart=s.time;this.times.push(s.time);p.buffer=null;p.slideUntil=0;
   if(this.phase===1){p.water=Math.min(45,p.water);this.previousWater=p.water;this.announce('水分管理の練習：水分を45%に調整しました。',3);}
   if(this.phase===3){this.view='TPS';this.clearPracticeShots();this.spawnCPU();}
   if(this.phase===5){this.challengeBP=0;this.adCombo=0;s.resetCombo(p,'tutorialChallenge');this.place(s.stage.practiceStart);this.spawnCPU();this.nextCPUAttack=s.time+4.5;}
@@ -48,11 +48,9 @@ export class TutorialController{
   if(e.id!==0)continue;
   if(e.type==='score')this.lastScore={time:e.time,delta:e.delta};
   if(e.type==='shoot'){if(this.phase===2&&this.blockedTried&&!s.waterAt(p.p,p.inWater)){this.outsideShot=true;this.announce('外では攻撃できた！ 回復と妨害を使い分けよう。');this.next();}else if(this.phase===3){if(this.view==='TPS'&&!this.fpsSeen){this.tpsShot=true;this.announce('相手を狙うのが難しい？ Vで一人称視点（FPS）も使える！！',4);}if(this.view==='FPS'&&this.fpsSeen)this.fpsShot=true;}}
-  if(e.type==='jump'&&this.phase===4&&e.key==='Space')this.jumpCost=e.cost;
   if(e.type!=='land'||e.time<=this.lastLand)continue;this.lastLand=e.time;
   if(e.scored&&['A','D'].includes(e.key)){this.adCombo=(e.time-this.lastAD<=FLOP_RULES.comboWindow+1e-7?this.adCombo:0)+1;this.lastAD=e.time;this.flops++;if(this.phase===0&&this.adCombo>=TUTORIAL_GOALS.flops)this.next();else if(this.phase===5){if(this.lastScore?.time===e.time)this.challengeBP+=this.lastScore.delta;this.checkGoal();}}
   else this.adCombo=0;
-  if(this.phase===4&&e.key==='Space'&&e.scored){this.jumped=true;this.announce(`ジャンプ成功！ 水分を${this.jumpCost??FLOP_RULES.spaceWaterCost}%使った。次はビタンビタンだ！`,3);this.next();}
  }
  if(this.phase===1){if(p.inWater&&p.water>this.previousWater)this.recovered+=p.water-this.previousWater;this.previousWater=p.water;if(this.recovered>=TUTORIAL_GOALS.recovery-1e-7){this.announce('水分が回復した！ でも、水たまりは万能じゃない。',3);this.next();}}
  this.checkGoal();}
@@ -64,7 +62,6 @@ export class TutorialController{
   if(this.phase===1)progress=`水分回復 ${Math.min(15,this.recovered).toFixed(0)} / 15%（毎秒${this.sim.flopRules.waterRecovery}%）`;
   if(this.phase===2){text=this.blockedTried?'水たまりの外へ出て、もう一度左クリック！':step.text;detail=this.blockedTried?'中では攻撃できない！ マウスで外へ向き、A / Dで出よう。':step.detail;progress=this.blockedTried?'✓ 水中で攻撃不可を体験　□ 外で攻撃':'□ 水たまりの中で左クリック';}
   if(this.phase===3){if(this.fpsHit){text='Vで三人称視点（TPS）へ戻してみよう！';detail='でも忘れるな！ BBBの主役は攻撃じゃない！ ビタンビタンだ！！';}else if(!this.tpsShot){text=this.view==='TPS'?step.text:'まずVでTPSに戻り、練習CPUを狙おう。';}else if(!this.fpsSeen){text='相手を狙うのが難しい？ Vで一人称視点（FPS）！！';detail='狙いやすい視点に切り替えてみよう！';}else{text=this.view==='FPS'?'FPSで練習CPUに1回当てよう！ 左クリックで攻撃。':'VでFPSへ戻り、練習CPUを狙ってみよう。';detail=s.time-this.phaseStart>8?'練習CPUは静止中。倒さなくてOK。狙うときだけFPSも便利！':'狙いはマウスで調整。攻撃は相手のビタンビタンを邪魔する手段！';}progress=`${this.tpsShot?'✓':'□'} TPSで狙う　${this.fpsSeen?'✓':'□'} VでFPS　${this.fpsHit?'✓':'□'} 命中　${this.fpsHit&&this.view==='TPS'?'✓':'□'} TPSへ戻す`;}
-  if(this.phase===4)progress=p.inWater?'まずは水たまりの外へ！':'Space → 着地で成功（消費2%）';
   if(this.phase===5)progress=`${Math.min(this.adCombo,8)} / 8 コンボ　${this.challengeBP} / 100 BP（この挑戦で獲得）`;
   return {...step,text,detail,progress};}
 }

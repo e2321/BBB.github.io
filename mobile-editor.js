@@ -4,9 +4,10 @@ export class MobileEditor {
   this.controls=controls;let storage;try{storage=localStorage;}catch{}this.storage=storage;this.settings=loadSettings(storage);this.open=false;this.editing=false;this.selected='bitan';this.drag=null;
   this.panel=document.getElementById('mobileSettings');if(!this.panel)return;
   this.stage=document.getElementById('mobileLayoutEditor');this.probe=document.getElementById('mobileSafeArea');
-  this.sensitivity=document.getElementById('mobileSensitivity');this.size=document.getElementById('mobileButtonSize');this.preview=new Map();
+  this.autoFire=document.getElementById('mobileAutoFire');this.sensitivity=document.getElementById('mobileSensitivity');this.size=document.getElementById('mobileButtonSize');this.preview=new Map();
   for(const button of document.querySelectorAll('[data-open-mobile-settings]'))controls.on(button,'click',()=>this.show());
   controls.on(document.getElementById('mobileSettingsClose'),'click',()=>this.close());
+  controls.on(this.autoFire,'change',()=>{this.settings.autoFire=this.autoFire.checked;this.persist();this.controls.reset();this.controls.signature=null;this.controls.update();});
   controls.on(this.sensitivity,'input',()=>{this.settings.sensitivity=Number(this.sensitivity.value);this.persist();this.labels();});
   controls.on(document.getElementById('mobileEditLayout'),'click',()=>this.edit());
   controls.on(document.getElementById('mobileLayoutSave'),'click',()=>this.finish(true));
@@ -26,12 +27,12 @@ export class MobileEditor {
  close(){if(this.editing){this.finish(false);return;}this.open=false;if(this.panel)this.panel.hidden=true;this.controls.reset();this.controls.signature=null;this.controls.update();}
  edit(){this.draft=structuredClone(this.settings);this.editing=true;this.panel.hidden=true;this.stage.hidden=false;this.controls.reset();this.labels();this.layout();}
  finish(save){if(save){this.settings=this.draft;this.persist();}this.drag=null;this.editing=false;this.draft=null;this.stage.hidden=true;this.panel.hidden=false;this.layout();this.labels();}
- labels(){if(!this.panel)return;this.sensitivity.value=this.settings.sensitivity;document.getElementById('mobileSensitivityValue').textContent=`${this.settings.sensitivity.toFixed(1)}倍`;
+ labels(){if(!this.panel)return;if(this.autoFire)this.autoFire.checked=this.settings.autoFire;this.sensitivity.value=this.settings.sensitivity;document.getElementById('mobileSensitivityValue').textContent=`${this.settings.sensitivity.toFixed(1)}倍`;
   if(this.editing){const b=this.draft.buttons[this.selected];this.size.value=b.scale;document.getElementById('mobileSelectedButton').textContent=BUTTONS[this.selected].name;document.getElementById('mobileButtonSizeValue').textContent=`${Math.round(b.scale*100)}%`;for(const [key,el]of this.preview)el.classList.toggle('selected',key===this.selected);}
  }
  insets(){if(!this.probe)return {};const css=getComputedStyle(this.probe);return Object.fromEntries(['left','right','top','bottom'].map(k=>[k,parseFloat(css.getPropertyValue(`padding-${k}`))||0]));}
  rect(key){return buttonRect(key,(this.draft||this.settings).buttons[key],innerWidth,innerHeight,this.insets());}
- layout(){if(!this.panel)return;for(const key of Object.keys(BUTTONS)){const r=this.rect(key);const el=this.editing?this.preview.get(key):this.controls.elements.get(key);if(!el)continue;Object.assign(el.style,{position:'fixed',left:`${r.x-r.size/2}px`,top:`${r.y-r.size/2}px`,right:'auto',bottom:'auto',width:`${r.size}px`,height:`${r.size}px`,minWidth:'0',minHeight:'0',fontSize:`${(key==='bitan'?22:key==='view'?11:13)*(this.draft||this.settings).buttons[key].scale}px`});if(this.editing){const position=`${BUTTONS[key].name} 横${Math.round(r.x/innerWidth*100)}% 縦${Math.round(r.y/innerHeight*100)}%`;el.setAttribute('aria-label',position);if(key===this.selected){const output=document.getElementById('mobileLayoutPosition');if(output)output.textContent=position;}}}this.placeTutorial();}
+ layout(){if(!this.panel)return;for(const key of Object.keys(BUTTONS)){const r=this.rect(key);const el=this.editing?this.preview.get(key):this.controls.elements.get(key);if(!el)continue;Object.assign(el.style,{position:'fixed',left:`${r.x-r.size/2}px`,top:`${r.y-r.size/2}px`,right:'auto',bottom:'auto',width:`${r.size}px`,height:`${r.size}px`,minWidth:'0',minHeight:'0',fontSize:`${(key==='bitan'?22:key==='view'?11:13)*(this.draft||this.settings).buttons[key].scale}px`});if(this.editing){const position=`${BUTTONS[key].name} 横${Math.round(r.x/innerWidth*100)}% 縦${Math.round(r.y/innerHeight*100)}%`;el.setAttribute('aria-label',position);if(key===this.selected){const output=document.getElementById('mobileLayoutPosition');if(output)output.textContent=position;}}}const status=this.controls.autoStatus;if(status){const r=this.rect('attack'),safe=this.insets();Object.assign(status.style,{left:`${Math.max(safe.left||12,Math.min(innerWidth-88-(safe.right||12),r.x-44))}px`,top:`${Math.max(safe.top||8,Math.min(innerHeight-32-(safe.bottom||12),r.y-16))}px`});}this.placeTutorial();}
  placeTutorial(){
   if(!document.body.style?.setProperty)return;
   const safe=this.insets(),w=innerWidth,h=innerHeight,width=h>w?w-24:Math.min(460,Math.max(180,w-310)),height=Math.max(50,Math.min(110,h*.28)),total=height+96;

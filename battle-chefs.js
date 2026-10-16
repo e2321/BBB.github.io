@@ -15,14 +15,14 @@ export class KitchenChefs{
  }
  release(p){const s=this.sim;p.surpriseWindows=[];if(s.stage.id!=='kitchen'||s.stage.allowChefBonus===false)return;
   // A release alone is free. A/D on the subsequent actual launch is the attempt;
-  // Space is an escape jump, so it never carries a surprise penalty.
+  // Only a real A/D action can attempt a surprise.
   const candidates=s.chefs.filter(c=>(c.target===p.id||c.observedTarget===p.id)&&(['APPROACHING','INSPECTING'].includes(c.state)||(c.state==='CHASING'&&c.ignoreSession===`${p.id}:${p.feignSession}`))&&c.observedSession===p.feignSession&&this.rewardReady(c,p)&&s.time>=c.retryUntil&&c.attemptSessions[p.id]!==p.feignSession&&this.distance(c,p)<=FEIGN_RULES.attemptDistance&&this.visible(c,p)).sort((a,b)=>this.distance(a,p)-this.distance(b,p));
   const c=candidates[0];if(!c)return;
   const valid=c.state==='INSPECTING'&&c.unguarded&&c.watchedSession===p.feignSession;
   p.surpriseWindows.push({chef:c.id,session:p.feignSession,valid,until:s.time+FEIGN_RULES.releaseWindow,expires:s.time+FEIGN_RULES.attemptLifetime});
   if(valid){c.state='RELEASE_WAIT';c.timer=0;c.unguarded=false;}
  }
- surprise(p,key=p.lastKey){const s=this.sim,windows=p.surpriseWindows;p.surpriseWindows=[];if(key==='Space'||s.stage.id!=='kitchen'||s.state!=='PLAYING'||p.dead)return;
+ surprise(p,key=p.lastKey){const s=this.sim,windows=p.surpriseWindows;p.surpriseWindows=[];if(!['A','D'].includes(key)||s.stage.id!=='kitchen'||s.state!=='PLAYING'||p.dead)return;
   const window=windows[0];if(!window||s.time>window.expires+1e-7)return;const c=s.chefs.find(c=>c.id===window.chef);
   if(!c||window.session!==p.feignSession||c.attemptSessions[p.id]===window.session||!this.rewardReady(c,p)||s.time<c.retryUntil)return;
   c.attemptSessions[p.id]=window.session;
