@@ -1,0 +1,86 @@
+/* Touch controls are an input overlay; menus keep native scrolling and form controls. */
+#mobileControls,#mobilePortrait{display:none}
+body.mobile-ui #mobileControls:not([hidden]){display:block;position:fixed;inset:0;z-index:9;pointer-events:none;--edge-l:max(12px,env(safe-area-inset-left));--edge-r:max(12px,env(safe-area-inset-right));--edge-b:max(12px,env(safe-area-inset-bottom))}
+#mobileControls button{position:absolute;pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;color:#fff6df;background:#173e4cdb;border:2px solid #a0d5d8c9;box-shadow:0 3px 10px #0007;font-weight:850;font-size:14px;padding:7px;border-radius:50%;transition:transform .07s,background .07s}
+#mobileControls button.pressed{transform:scale(.93);background:#d6b46f;color:#15303d}
+#mobileControls .unavailable{opacity:.55;border-style:dashed}
+#mobileBitan{left:var(--edge-l);bottom:var(--edge-b);width:96px;height:96px;font-size:22px!important;background:#b8934be8!important;border-color:#fff0b9!important;color:#152f3b!important}
+#mobileAttack{right:var(--edge-r);bottom:var(--edge-b);width:82px;height:82px}
+#mobileJump{right:calc(var(--edge-r) + 96px);bottom:var(--edge-b);width:68px;height:68px;font-size:12px!important}
+#mobileControls .mobile-toolbar{position:absolute;right:var(--edge-r);bottom:calc(var(--edge-b) + 104px);display:flex;gap:7px;pointer-events:auto}
+#mobileControls .mobile-toolbar button{position:static;min-width:48px;min-height:44px;border-radius:10px;font-size:11px}
+body.mobile-ui #mobilePortrait:not([hidden]){display:block;position:fixed;left:12px;right:12px;top:max(8px,env(safe-area-inset-top));z-index:45;background:#123843ed;border:1px solid #ffe29c;padding:9px;text-align:center;color:#fff0c2;pointer-events:none;font-size:16px;font-weight:800}
+#mobilePortrait small{font-size:11px;font-weight:400}
+body.mobile-ui button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+body.mobile-ui #world{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body.mobile-ui #overlay{display:block;padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;background:#102a35f5}
+body.mobile-ui #overlay .titlecard{width:100%;max-width:720px;padding:0;margin:auto}
+body.mobile-ui #overlay .eyebrow{font-size:9px;letter-spacing:2px;margin:8px 0}
+body.mobile-ui #overlay h1{font-size:clamp(30px,7vw,46px);letter-spacing:-1px}
+body.mobile-ui #overlay .subtitle{font-size:14px;margin:10px 0}
+body.mobile-ui .mode-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}
+body.mobile-ui .mode-card{padding:12px 8px;min-height:80px}
+body.mobile-ui .mode-card strong{font-size:14px;overflow-wrap:anywhere}
+body.mobile-ui .mode-card small{font-size:8px;letter-spacing:.5px}
+body.mobile-ui .mode-card span{font-size:10px}
+body.mobile-ui #start{width:100%;max-width:720px;min-height:48px;padding:12px 18px;letter-spacing:1px}
+body.mobile-ui #characterPanel{position:static;width:100%;max-width:720px;max-height:none;margin:16px auto;padding:14px;overflow:visible}
+body.mobile-ui #characterCards button{min-height:80px}
+body.mobile-ui #characterCards img{max-height:100px;object-fit:contain}
+body.mobile-ui #overlay>.settings{position:static;max-width:720px;margin:16px auto;display:flex;gap:12px;padding:12px;font-size:13px;justify-content:center}
+body.mobile-ui input,body.mobile-ui select{font-size:16px!important;min-height:44px;max-width:100%}
+body.mobile-ui .settings button,body.mobile-ui #onlineMenu button,body.mobile-ui .secondary-actions button,body.mobile-ui .battle-stage,body.mobile-ui .result-card button{min-height:44px;font-size:13px;padding:10px}
+body.mobile-ui #onlineMenu label{display:inline-block;max-width:100%}
+body.mobile-ui #onlineMenu input{width:min(220px,65vw);max-width:100%}
+body.mobile-ui #onlinePlayers{padding-left:20px;overflow-wrap:anywhere}
+body.mobile-ui #onlineFillCpu{width:22px;min-height:22px;vertical-align:middle}
+body.mobile-ui #battleTime{top:max(5px,env(safe-area-inset-top));padding:3px 10px;font-size:27px}
+body.mobile-ui #battleStageBadge{top:43px;font-size:10px;padding:2px 6px}
+body.mobile-ui #battleVital{left:max(8px,env(safe-area-inset-left));top:max(7px,env(safe-area-inset-top));min-width:0;padding:5px 8px}
+body.mobile-ui #battleVital #battleHearts{font-size:19px;letter-spacing:2px}
+body.mobile-ui #battleRanking{top:max(7px,env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));min-width:0;width:154px;padding:6px 8px;font-size:10px;backdrop-filter:none}
+body.mobile-ui #battleRanking strong{font-size:10px;letter-spacing:0}
+body.mobile-ui #battleRankingRows>div{padding:3px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.mobile-ui #battleCombo,body.mobile-ui[data-mode=TUTORIAL] #battleCombo{left:12px;top:53px;bottom:auto;min-width:0;width:102px;padding:6px 8px;border-radius:9px}
+body.mobile-ui #battleComboCount{font-size:25px}
+body.mobile-ui #battleCombo span{font-size:9px;letter-spacing:0}
+body.mobile-ui #battleMultiplier{font-size:14px;margin-top:2px}
+body.mobile-ui #battleSuper{font-size:10px;margin-top:3px}
+body.mobile-ui #battleBPGain{font-size:15px}
+body.mobile-ui #battleWater{bottom:max(8px,env(safe-area-inset-bottom));width:clamp(124px,29vw,270px);padding:6px 9px;border-radius:11px}
+body.mobile-ui #battleWaterText{font-size:14px;margin:0 0 4px}
+body.mobile-ui #battleWaterBar{height:11px}
+body.mobile-ui #battleDry{font-size:13px;margin-bottom:5px}
+body.mobile-ui #battleBoostHUD{left:118px;bottom:max(60px,calc(env(safe-area-inset-bottom) + 56px));font-size:10px;padding:5px 7px;max-width:170px}
+body.mobile-ui #battleFeignGuide,body.mobile-ui #battleFeignHint{display:none!important}
+body.mobile-ui #battleNotice{font-size:15px;top:56%;width:65%}
+body.mobile-ui #battleChefBonus{font-size:19px;top:55%;max-width:80vw}
+body.mobile-ui #battleCountdownValue{font-size:clamp(54px,15vh,95px)}
+body.mobile-ui #battleCountdownHint{font-size:12px}
+body.mobile-ui #battleRules{top:26%;width:75vw}
+body.mobile-ui #battleRules strong,body.mobile-ui #battleRules span{padding:7px 10px;font-size:15px;border-width:2px;margin-left:0;margin-right:0}
+body.mobile-ui #crosshair{font-size:28px}
+body.mobile-ui #onlineMatchInfo{top:43px;left:max(8px,env(safe-area-inset-left));font-size:9px;max-width:100px}
+body.mobile-ui #battlePause,body.mobile-ui #battleResults,body.mobile-ui #tutorialResults{padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));touch-action:pan-y}
+body.mobile-ui .result-card{max-height:90dvh;overflow:auto;padding:16px}
+body.mobile-ui .result-card h2{font-size:25px}
+body.mobile-ui .result-card td,body.mobile-ui .result-card th{font-size:12px;padding:8px 4px;overflow-wrap:anywhere}
+body.mobile-ui #tutorialHUD{top:max(48px,calc(env(safe-area-inset-top) + 42px));left:124px;right:180px;width:auto;transform:none;padding:7px 10px;max-height:calc(100dvh - 218px);overflow:auto;pointer-events:auto;touch-action:pan-y}
+body.mobile-ui #tutorialStepName{font-size:12px!important;display:block;margin:0 60px 4px 0}
+body.mobile-ui #tutorialBP{right:9px;top:7px;font-size:13px}
+body.mobile-ui #tutorialHUD p{margin:3px 0;line-height:1.4}
+body.mobile-ui #tutorialInstruction{font-size:13px!important}
+body.mobile-ui #tutorialDetail,body.mobile-ui #tutorialProgress,body.mobile-ui #tutorialStatus,body.mobile-ui #tutorialView{font-size:11px!important}
+body.mobile-ui #tutorialGuide{display:none}
+body.mobile-ui #tutorialTools{left:124px;right:180px;top:auto;bottom:112px;max-width:none;justify-content:center;gap:5px}
+body.mobile-ui #tutorialTools small{display:none}
+body.mobile-ui #tutorialTools button{font-size:10px;padding:6px;min-height:44px;flex:1}
+body.mobile-ui #tutorialSkip{top:auto;right:180px;bottom:66px;font-size:10px;padding:5px 8px;min-height:30px;max-width:200px}
+body.mobile-ui .bp-float{font-size:22px}
+@media (orientation:portrait){body.mobile-ui .mode-grid{grid-template-columns:1fr}body.mobile-ui .mode-card{min-height:64px}body.mobile-ui .mode-card small{display:none}body.mobile-ui #tutorialHUD{left:12px;right:12px;top:145px;max-height:30dvh}body.mobile-ui #tutorialTools{left:115px;right:12px;bottom:170px}body.mobile-ui #tutorialSkip{right:12px;bottom:215px}body.mobile-ui #mobileControls .mobile-toolbar{bottom:calc(var(--edge-b) + 108px)}body.mobile-ui #battleWater{bottom:120px;width:45vw}body.mobile-ui #battleBoostHUD{bottom:165px;left:12px}}
+@media (max-height:360px) and (orientation:landscape){body.mobile-ui #mobileBitan{width:82px;height:82px;font-size:19px!important}body.mobile-ui #mobileAttack{width:72px;height:72px}body.mobile-ui #mobileControls .mobile-toolbar{bottom:calc(var(--edge-b) + 90px)}body.mobile-ui #tutorialHUD{left:112px;right:176px;top:46px}body.mobile-ui #tutorialTools{left:112px;right:176px;bottom:96px}body.mobile-ui #tutorialSkip{bottom:51px;right:176px}body.mobile-ui #battleCombo{width:94px}body.mobile-ui #battleRules strong,body.mobile-ui #battleRules span{font-size:13px}}
+@media (prefers-reduced-motion:reduce){#mobileControls button{transition:none}}
+
+#mobileBP{position:absolute;left:var(--edge-l);bottom:calc(var(--edge-b) + 104px);padding:4px 8px;border-radius:8px;background:#103541e8;color:#ffe29a;font-size:16px;font-weight:900;pointer-events:none;max-width:110px}body.mobile-ui[data-mode=TUTORIAL] #mobileBP{display:none}
+
+body.mobile-ui[data-state=PAUSED] #tutorialHUD,body.mobile-ui[data-state=PAUSED] #tutorialTools,body.mobile-ui[data-state=PAUSED] #tutorialSkip{display:none!important}
