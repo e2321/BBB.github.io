@@ -6,9 +6,9 @@ import {FEIGN_RULES,FLOP_RULES,NORMAL_FLOP_SPEED,RAINBOW_FLOP_SPEED} from '../ba
 const step=(s,time,dt=1/60)=>{for(let t=0;t<time-1e-8;t+=dt)s.step(Math.min(dt,time-t));};
 function game(){const s=new BattleSimulation(145,'kitchen');s.start();for(const p of s.players){p.bot=false;p.p={x:12,y:.28,z:11};}return s;}
 function ready(s,id=0,chef=0){const p=s.players[id],c=s.chefs[chef];Object.assign(p,{p:{x:c.x,y:.28,z:c.z+1},v:{x:0,y:0,z:0},dead:false,hp:4,grounded:true,feigning:false,still:0,buffer:null,lastJump:-10,inputKey:'',inputTime:-10});s.feign(id);for(let i=0;i<300&&!c.unguarded;i++)s.step();assert.equal(c.unguarded,true);assert.equal(c.target,id);return {p,c};}
-test('a real surprise launch awards 1000 once and applies rainbow speed and half cost immediately for fish, squid and CPU',()=>{
+test('a real surprise launch awards 1000 once and applies rainbow speed and reduced cost immediately for fish, squid and CPU',()=>{
  for(const character of ['fish','squid'])for(const bot of [false,true]){const s=game(),{p,c}=ready(s);p.character=character;p.bot=bot;p.points=123;p.water=100;
-  assert.equal(s.jump(p.id,'A'),true);assert.equal(p.points,1123);assert.equal(p.combo,50);assert.equal(p.multiplier,3);assert.equal(p.lastComboLanding,s.time);assert.equal(p.water,99.5);assert.equal(p.jumpAnimationSpeed,NORMAL_FLOP_SPEED*RAINBOW_FLOP_SPEED);assert.equal(c.rewardUntil[p.id],s.time+20);assert.equal(c.state,'CHASING');
+  assert.equal(s.jump(p.id,'A'),true);assert.equal(p.points,1123);assert.equal(p.combo,50);assert.equal(p.multiplier,3);assert.equal(p.lastComboLanding,s.time);assert.equal(p.water,99.4);assert.equal(p.jumpAnimationSpeed,NORMAL_FLOP_SPEED*RAINBOW_FLOP_SPEED);assert.equal(c.rewardUntil[p.id],s.time+20);assert.equal(c.state,'CHASING');
   assert.equal(s.events.filter(e=>e.type==='chefBonus').length,1);assert.equal(s.events.filter(e=>e.type==='rainbow').length,1);s.chefController.surprise(p);assert.equal(p.points,1123);assert.equal(p.combo,50);
   p.bot=false;for(let i=0;i<60&&!p.grounded;i++)s.step();assert.equal(p.points,1173);assert.equal(p.combo,51);assert.equal(s.events.filter(e=>e.type==='score').length,1);assert.equal(s.events.filter(e=>e.type==='rainbow').length,1);
  }
@@ -39,6 +39,6 @@ test('normal stage cannot grant a surprise bonus and new matches clear pair cool
 });
 test('server-owned shared simulation snapshots carry the authoritative reward, combo and one-time events',()=>{
  const room=new Session('ABC234');room.add('a','A');room.ready('a',true);room.start('a');room.sim=game();const {p}=ready(room.sim);room.sim.jump(p.id,'A');
- const snapshot=room.snapshot();assert.equal(snapshot.players[0].points,1000);assert.equal(snapshot.players[0].combo,50);assert.equal(snapshot.players[0].water,99.5);assert.equal(snapshot.events.filter(e=>e.type==='chefBonus').length,1);assert.equal(snapshot.events.filter(e=>e.type==='rainbow').length,1);assert.equal(room.snapshot().events.length,0);
+ const snapshot=room.snapshot();assert.equal(snapshot.players[0].points,1000);assert.equal(snapshot.players[0].combo,50);assert.equal(snapshot.players[0].water,99.4);assert.equal(snapshot.events.filter(e=>e.type==='chefBonus').length,1);assert.equal(snapshot.events.filter(e=>e.type==='rainbow').length,1);assert.equal(room.snapshot().events.length,0);
  // Kitchen is not exposed by the online lobby; this verifies the shared authority path only.
 });

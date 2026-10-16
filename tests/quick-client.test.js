@@ -22,3 +22,18 @@ test('cancel during health wake prevents reservation and retry uses a fresh conn
  try{f.url='wss://fixture.invalid';f.ensureConnected=OnlineFriends.prototype.ensureConnected.bind(f);const d=defer();let health=0,reservations=0;f.api=async path=>{if(path==='/health')return ++health===1?d.promise:{ok:true};reservations++;return {};};f.client={consumeSeatReservation:async()=>room()};const cancelled=f.quickMatch();f.cancelQuick();const next=f.quickMatch();d.resolve({ok:true});await Promise.all([cancelled,next]);assert.equal(health,2);assert.equal(reservations,1);assert.ok(f.room);
  }finally{close();globalThis.location=oldLocation;}
 });
+
+
+test('quick retry resumes quick matching after a wake failure, never a private room',async()=>{
+ const {f,nodes,close}=fixture();try{let wakes=0;f.ensureConnected=async()=>{if(++wakes===1)throw new Error('起動待ち失敗');};const paths=[];f.api=async path=>{paths.push(path);return {};};f.client={consumeSeatReservation:async()=>room()};await f.quickMatch();assert.equal(f.room,null);assert.equal(nodes.get('onlineQuickWaiting').hidden,true);assert.match(nodes.get('onlineRetry').textContent,/再試行/);await f.retryConnection();assert.deepEqual(paths,['/quick-match']);assert.ok(f.room);assert.equal(f.retryAction,null);}finally{close();}
+});
+
+test('private create and code-join retry resume their own action after wake failure',async()=>{
+ for(const create of [true,false]){const {f,close}=fixture();try{document.getElementById('onlineCodeInput').value='07';let calls=0;f.ensureConnected=async()=>{if(++calls===1)throw new Error('sleeping');};const paths=[];f.api=async(path,method)=>{paths.push([path,method]);return {code:'07',roomId:'private',ticket:'ticket'};};f.client={joinById:async()=>room()};await f.join(create);assert.equal(f.room,null);await f.retryConnection();assert.deepEqual(paths,[[create?'/rooms':'/rooms/07',create?'POST':'GET']]);assert.equal(f.code,'07');assert.ok(f.room);}finally{close();}}
+});
+
+test('friend room request and SDK wait for successful health; cancellation during wake blocks both',async()=>{
+ const {f,nodes,close}=fixture(),oldLocation=globalThis.location;globalThis.location={protocol:'https:',origin:'https://example.invalid'};
+ try{f.url='wss://fixture.invalid';f.ensureConnected=OnlineFriends.prototype.ensureConnected.bind(f);const d=defer();let sdk=0,roomRequests=0;f.sdk=async()=>{sdk++;};f.api=async path=>{if(path==='/health')return d.promise;roomRequests++;return {};};const pending=f.join(true);assert.equal(nodes.get('onlineConnection').hidden,false);assert.match(nodes.get('onlineConnectionText').textContent,/オンラインサーバーを起動/);assert.equal(sdk,0);assert.equal(roomRequests,0);f.cancelQuick();d.resolve({ok:true});await pending;assert.equal(sdk,0);assert.equal(roomRequests,0);assert.equal(f.retryAction,null);
+ }finally{close();globalThis.location=oldLocation;}
+});

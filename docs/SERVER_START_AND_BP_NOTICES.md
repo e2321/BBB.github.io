@@ -42,7 +42,7 @@ wss://bbb-friends-server.onrender.com
 
 [Render公式仕様](https://render.com/docs/free)では、無料Webサービスは15分の無通信で休止し、次のHTTP/WebSocket接続で復帰する（約1分）。起動待ちをなくしたい場合は、Render Dashboardの該当WebサービスのInstance Typeで有料インスタンスへの変更を検討する。クライアント修正では常時稼働を保証できない。監視サービス等の定期アクセスは追加していない。
 
-今回サーバー側コードとRender設定は変更していないため、この修正だけならRender再デプロイは不要。公開フロントエンドへの反映には、変更のコミット・Push後、既存のPages自動公開が必要（Push・デプロイは実行していない）。
+起動・BP通知修正だけならRender再デプロイは不要。ただし、後続のレインボー水分消費変更はサーバーが共通ルールを読み込むため、Renderにも再デプロイが必要（詳細は RENDER_WAKEUP.md）。公開フロントエンドへの反映には、変更のコミット・Push後、既存のPages自動公開が必要（Push・デプロイは実行していない）。
 
 ## BP表示が残る原因と修正
 

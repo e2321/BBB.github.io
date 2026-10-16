@@ -55,7 +55,8 @@ export const knifeFireInterval=player=>Math.max(BATTLE.fireInterval*(player.bot?
 export const DEFAULT_MAX_HP=3;
 export const validMaxHP=n=>typeof n==='number'&&Number.isInteger(n)&&n>=1&&n<=4;
 export const maxHPValue=n=>validMaxHP(n)?n:DEFAULT_MAX_HP;
-export const RAINBOW_WATER_COST_MULTIPLIER=.5;
+// 0.5 -> 0.6 water points per flop: +20% consumption, still below normal.
+export const RAINBOW_WATER_COST_MULTIPLIER=.6;
 export const RAINBOW_WATER_BONUS=50;
 export const WALL_FARM_RULES={seconds:2,minMovement:.025,releaseDistance:.08};
 export const BOT_COMBO_RULES={continueChance:.9,refillThreshold:25};

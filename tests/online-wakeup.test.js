@@ -9,3 +9,5 @@ test('invalid health does not count as success',async()=>{await assert.rejects(w
 test('combined development command overrides production endpoint only in child environment',()=>{const original={NODE_ENV:'production',VITE_ONLINE_SERVER_URL:'wss://example.invalid',KEEP:'yes'};const local=developmentEnv(original);assert.equal(local.VITE_ONLINE_SERVER_URL,'ws://localhost:2567');assert.equal(local.PORT,'2567');assert.equal(local.KEEP,'yes');assert.equal(original.NODE_ENV,'production');});
 
 test('backoff cancellation clears its timer immediately',async()=>{const controller=new AbortController();const pending=abortableDelay(2000,controller.signal);controller.abort();await assert.rejects(pending,{name:'AbortError'});});
+
+test('already awake service advances immediately without a backoff or extra health request',async()=>{let calls=0,waits=0;await wakeServer(async()=>{calls++;return {ok:true};},{wait:async()=>{waits++;}});assert.equal(calls,1);assert.equal(waits,0);});
