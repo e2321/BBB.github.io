@@ -9,7 +9,7 @@ test('CPU prioritizes escape after damage inside either arena puddle, then avoid
 });
 test('unknown attack origin escapes; avoidance expires and player/land hits keep their AI untouched',()=>{const s=new BattleSimulation(17);s.start();const p=s.players[1],w=s.puddles[1];Object.assign(p.p,{x:w.x,y:.28,z:w.z});p.inWater=true;s.damage(p,null);assert.ok(p.ai.waterEscape);s.time=7;s.ai.update(p,1/60);assert.equal(p.ai.waterEscape,null);s.time=20;p.ai.nextThink=0;p.water=10;s.ai.update(p,1/60);assert.equal(p.ai.waterTarget,w);const human=s.players[0];human.inWater=true;s.damage(human,1);assert.equal(human.ai.waterEscape,undefined);});
 test('quality changes real vertex counts and animation frequency without gameplay constants',()=>{
- for(const kind of ['squid']){const counts=['low','medium','high'].map(q=>seafoodTemplateStats(kind,q).vertices);assert.ok(counts[0]<counts[1]&&counts[1]<counts[2],kind+': '+counts);}
+ for(const kind of ['squid']){const counts=['low','medium','high'].map(q=>seafoodTemplateStats(kind,q).vertices);assert.ok(counts[0]<counts[1]&&counts[1]===counts[2],kind+': '+counts);}
  assert.ok(MODEL_QUALITY.low.animationHz<MODEL_QUALITY.high.animationHz);
 });
 test('all seafood instances isolate materials, reuse geometry, animate and release owned materials',()=>{

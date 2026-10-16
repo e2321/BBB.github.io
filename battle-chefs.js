@@ -4,16 +4,16 @@ import {segmentBox} from './simulation.js';
 import {INSPECTION} from './physics-config.js';
 export class KitchenChefs{
  constructor(sim){this.sim=sim;}
- reset(){this.sim.chefs=this.sim.stage.chefs.map(def=>({...def,y:0,state:'CHASING',timer:0,speed:0,heading:0,lastThrow:-10,nextAttack:1.5+def.id,rewardUntil:{},attemptSessions:{},retryUntil:0,target:null,question:0,unguarded:false,patrolIndex:0,path:[],nextThink:0,nextTargetThink:0,surpriseAt:-10}));}
+ reset(){this.sim.chefs=this.sim.stage.chefs.slice(0,this.sim.stage.id==='tutorial'?1:this.sim.chefCount??2).map(def=>({...def,y:0,state:'CHASING',timer:0,speed:0,heading:0,lastThrow:-10,nextAttack:1.5+def.id,rewardUntil:{},attemptSessions:{},retryUntil:0,target:null,question:0,unguarded:false,patrolIndex:0,path:[],nextThink:0,nextTargetThink:0,surpriseAt:-10}));}
  rewardReady(c,p){return this.sim.time>=(c.rewardUntil[p.id]||0);}
  distance(c,p){return Math.hypot(c.x-p.p.x,c.y+BATTLE.bodyY-p.p.y,c.z-p.p.z);}
  visible(c,p){return !this.sim.obstacles.some(o=>segmentBox({x:c.x,y:c.y+.45,z:c.z},p.p,o,.035));}
  canAttack(c,p){return p&&!p.dead&&this.distance(c,p)<=CHEF_RULES.attackDistance&&Math.abs(p.p.y-c.y-BATTLE.bodyY)<=CHEF_RULES.attackHeight&&this.visible(c,p);}
  transition(c,state){if(c.state===state)return;c.state=state;c.timer=0;c.unguarded=false;c.path=[];c.nextThink=0;}
- move(c,goal,dt,speed){const s=this.sim;if(s.time>=c.nextThink){c.path=s.ai.route({x:c.x,z:c.z},goal);c.nextThink=s.time+.5;}while(c.path.length&&Math.hypot(c.path[0].x-c.x,c.path[0].z-c.z)<.6)c.path.shift();const destination=c.path[0]||goal,dx=destination.x-c.x,dz=destination.z-c.z,d=Math.hypot(dx,dz);if(d<.1){c.speed=0;return;}const oldX=c.x,oldZ=c.z,step=Math.min(speed*dt,d);c.x+=dx/d*step;c.z+=dz/d*step;
+ move(c,goal,dt,speed){const s=this.sim;if(s.time>=c.nextThink){c.path=s.ai.route({x:c.x,z:c.z},goal);c.nextThink=s.time+.5;}while(c.path.length&&Math.hypot(c.path[0].x-c.x,c.path[0].z-c.z)<.6)c.path.shift();const destination=c.path[0]||goal,dx=destination.x-c.x,dz=destination.z-c.z,d=Math.hypot(dx,dz);if(d<.1){c.speed=0;return;}for(const other of s.chefs){if(other===c)continue;const dx=c.x-other.x,dz=c.z-other.z,d=Math.hypot(dx,dz);if(d<.8&&d>.001){c.x+=dx/d*dt;c.z+=dz/d*dt;}}const oldX=c.x,oldZ=c.z,step=Math.min(speed*dt,d);c.x+=dx/d*step;c.z+=dz/d*step;
   const body={p:{x:c.x,y:BATTLE.bodyY,z:c.z},yaw:Math.atan2(-dx,-dz)};s.bodyCollision(body);c.x=body.p.x;c.z=body.p.z;c.speed=Math.hypot(c.x-oldX,c.z-oldZ)/dt;c.heading=Math.atan2(-(c.x-oldX),-(c.z-oldZ));
  }
- release(p){const s=this.sim;p.surpriseWindows=[];if(s.stage.id!=='kitchen'||s.stage.allowChefBonus===false)return;
+ release(p){const s=this.sim;p.surpriseWindows=[];if(!['kitchen','tutorial'].includes(s.stage.id)||s.stage.allowChefBonus===false)return;
   // A release alone is free. A/D on the subsequent actual launch is the attempt;
   // Only a real A/D action can attempt a surprise.
   const candidates=s.chefs.filter(c=>(c.target===p.id||c.observedTarget===p.id)&&(['APPROACHING','INSPECTING'].includes(c.state)||(c.state==='CHASING'&&c.ignoreSession===`${p.id}:${p.feignSession}`))&&c.observedSession===p.feignSession&&this.rewardReady(c,p)&&s.time>=c.retryUntil&&c.attemptSessions[p.id]!==p.feignSession&&this.distance(c,p)<=FEIGN_RULES.attemptDistance&&this.visible(c,p)).sort((a,b)=>this.distance(a,p)-this.distance(b,p));
@@ -22,7 +22,7 @@ export class KitchenChefs{
   p.surpriseWindows.push({chef:c.id,session:p.feignSession,valid,until:s.time+FEIGN_RULES.releaseWindow,expires:s.time+FEIGN_RULES.attemptLifetime});
   if(valid){c.state='RELEASE_WAIT';c.timer=0;c.unguarded=false;}
  }
- surprise(p,key=p.lastKey){const s=this.sim,windows=p.surpriseWindows;p.surpriseWindows=[];if(!['A','D'].includes(key)||s.stage.id!=='kitchen'||s.state!=='PLAYING'||p.dead)return;
+ surprise(p,key=p.lastKey){const s=this.sim,windows=p.surpriseWindows;p.surpriseWindows=[];if(!['A','D'].includes(key)||!['kitchen','tutorial'].includes(s.stage.id)||s.state!=='PLAYING'||p.dead)return;
   const window=windows[0];if(!window||s.time>window.expires+1e-7)return;const c=s.chefs.find(c=>c.id===window.chef);
   if(!c||window.session!==p.feignSession||c.attemptSessions[p.id]===window.session||!this.rewardReady(c,p)||s.time<c.retryUntil)return;
   c.attemptSessions[p.id]=window.session;
@@ -47,7 +47,7 @@ export class KitchenChefs{
    if(c.state==='APPROACHING'){if(p&&c.timer>FEIGN_RULES.approachTimeout){c.ignoreSession=`${p.id}:${p.feignSession}`;c.target=null;this.transition(c,'CHASING');continue;}if(!p||p.dead||!p.feigning||Math.abs(p.p.y-BATTLE.bodyY-c.y)>.6){this.transition(c,'CHASING');continue;}const distance=Math.hypot(c.x-p.p.x,c.z-p.p.z);if(distance<=FEIGN_RULES.inspectDistance){c.watchedSession=p.feignSession;c.question=Math.max(c.question,70);this.transition(c,'INSPECTING');}else this.move(c,p.p,dt,s.stage.id==='tutorial'?.85:1);continue;}
    const candidates=s.players.filter(q=>!q.dead&&q.feigning&&!q.inWater&&Math.abs(q.p.y-BATTLE.bodyY-c.y)<=.6&&this.rewardReady(c,q)&&s.time>=c.retryUntil&&c.attemptSessions[q.id]!==q.feignSession&&c.ignoreSession!==`${q.id}:${q.feignSession}`&&Math.hypot(c.x-q.p.x,c.z-q.p.z)<=FEIGN_RULES.noticeDistance&&this.visible(c,q)).sort((a,b)=>this.distance(c,a)-this.distance(c,b));
    if(candidates.length){c.question=Math.max(20,c.question);c.target=candidates[0].id;c.observedTarget=candidates[0].id;c.observedSession=candidates[0].feignSession;this.transition(c,'APPROACHING');continue;}
-   if(s.time>=(c.nextTargetThink||0)){c.nextTargetThink=s.time+CHEF_RULES.thinkInterval;const live=s.players.filter(q=>!q.dead&&!q.feigning&&this.distance(c,q)<=CHEF_RULES.noticeDistance&&this.visible(c,q)).sort((a,b)=>this.distance(c,a)-this.distance(c,b));const current=s.players[c.target];if(!current||current.dead||current.feigning||this.distance(c,current)>CHEF_RULES.chaseDistance||!this.visible(c,current))c.target=live[0]?.id??null;}
+   if(s.time>=(c.nextTargetThink||0)){c.nextTargetThink=s.time+CHEF_RULES.thinkInterval;const live=s.players.filter(q=>!q.dead&&!q.feigning&&this.distance(c,q)<=CHEF_RULES.noticeDistance&&this.visible(c,q)).sort((a,b)=>this.distance(c,a)+s.chefs.filter(k=>k!==c&&k.target===a.id).length*2-this.distance(c,b)-s.chefs.filter(k=>k!==c&&k.target===b.id).length*2);const current=s.players[c.target];if(!current||current.dead||current.feigning||this.distance(c,current)>CHEF_RULES.chaseDistance||!this.visible(c,current))c.target=live[0]?.id??null;}
    const target=s.players[c.target];if(target&&!target.dead&&!target.feigning&&s.time>=(c.dismissedUntil||0)&&this.visible(c,target)){
     if(this.canAttack(c,target)&&s.time>=c.nextAttack){this.transition(c,'ATTACKING');s.emit('chefWarning',{id:target.id,chef:c.id,p:{...target.p}});}
     else this.move(c,target.p,dt,c.chaseSpeed??CHEF_RULES.chaseSpeed);continue;

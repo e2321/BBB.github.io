@@ -22,3 +22,10 @@ export function buttonRect(key,setting,width,height,insets={}){
  const [x,y]=setting.x===null?positions[key]:[setting.x*width,setting.y*height];
  return {x:Math.max(l+size/2,Math.min(width-r-size/2,x)),y:Math.max(t+size/2,Math.min(height-b-size/2,y)),size};
 }
+
+export const hasTouchInput=({primaryCoarse=false,anyCoarse=false,maxTouchPoints=0}={})=>primaryCoarse||anyCoarse||maxTouchPoints>0;
+export function buttonLayout(buttons,width,height,insets={}){
+ const result={};for(const key of Object.keys(BUTTONS)){let r=buttonRect(key,buttons[key],width,height,insets);const overlaps=q=>Object.values(result).reduce((sum,o)=>sum+Math.max(0,(q.size+o.size)/2+6-Math.hypot(q.x-o.x,q.y-o.y)),0);
+  if(overlaps(r)>0){let best=r,bestScore=Infinity;for(const x of [.08,.25,.5,.75,.92])for(const y of [.12,.4,.7,.9]){const q=buttonRect(key,{...buttons[key],x,y},width,height,insets),score=overlaps(q)*10000+Math.hypot(q.x-r.x,q.y-r.y);if(score<bestScore){best=q;bestScore=score;}}r=best;}result[key]=r;
+ }return result;
+}

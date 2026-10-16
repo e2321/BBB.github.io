@@ -46,6 +46,7 @@ export const RAINBOW_LANDING_BP=50;
 
 // BBB A/D cycles and travel speed; tutorial motion keeps its existing pace.
 export const NORMAL_FLOP_SPEED=.85;
+// Visual animation multiplier only. Physics keeps the normal cadence.
 export const RAINBOW_FLOP_SPEED=1.5;
 // Human fire interval: 0.48s -> 0.42s (-12.5%). CPU baseline remains 0.60s.
 export const PLAYER_KNIFE_COOLDOWN_MULTIPLIER=.7;
@@ -66,3 +67,5 @@ export const BOT_DODGE_RULES={lookAhead:.45,radius:.65,duration:.6,distance:2.2}
 
 // Small attack-only leader preference, with hysteresis and shared-target pressure.
 export const BOT_TARGET_RULES={range:25,distanceOffset:2,leaderBonus:.12,currentBonus:.08,focusPenalty:.28,holdMin:1.2,holdJitter:.6,decisionMin:.35,decisionJitter:.3,switchRatio:1.12,urgentSwitchRatio:1.6};
+
+export const BOOST_PICKUP_BP=10;

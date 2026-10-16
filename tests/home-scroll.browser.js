@@ -5,7 +5,7 @@ import {readFileSync} from 'node:fs';
 const read=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 const html=read('index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<link\b[^>]*>/gi,'');
 const css=['style.css','graphics.css','mobile.css','home.css'].map(read).join('\n');
-for(const [name,width,height,mobile] of [['desktop short',1280,600,false],['mobile landscape',844,390,true],['mobile tall landscape',900,500,true],['small landscape',568,320,true],['portrait',390,844,true]]){
+for(const [name,width,height,mobile] of [['desktop short',1280,600,false],['mobile landscape',844,390,true],['mobile tall landscape',900,500,true],['small landscape',568,320,true],['portrait',390,844,true],['iPad landscape',1024,768,true],['large tablet',1366,1024,true],['Android tablet',1280,800,true]]){
  test(name+': title, banner and final settings are reachable with no horizontal overflow',async({page})=>{
   await page.setViewportSize({width,height});await page.setContent(html);await page.addStyleTag({content:css});
   await page.evaluate(mobile=>{document.body.classList.toggle('mobile-ui',mobile);document.querySelector('#onlineMenu').hidden=false;document.querySelector('#onlineStatus').textContent='オンライン接続失敗：'+ 'connection-error/'.repeat(25);},mobile);

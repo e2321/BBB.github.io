@@ -75,3 +75,5 @@ body.mobile-ui #overlay.arcade-home .mode-grid{grid-template-columns:1fr 1fr}bod
 @media(max-height:500px) and (orientation:landscape){.mobile-play-banner{padding:7px 10px;margin:10px 0;gap:1px;border-radius:13px}.mobile-play-banner strong{font-size:18px}.mobile-play-banner span{font-size:11px}}
 
 @media(max-width:600px) and (max-height:450px) and (orientation:landscape){#overlay.arcade-home{grid-template-columns:minmax(0,1fr)}}
+
+#characterCards img{width:100%;max-height:100px;object-fit:contain}.gacha-result{padding:18px;color:#ffdf56;font-size:1.4em;font-weight:900;animation:gacha-reveal .65s ease-out both}@keyframes gacha-reveal{from{transform:scale(.8);opacity:.3}to{transform:scale(1);opacity:1}}

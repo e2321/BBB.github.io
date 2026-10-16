@@ -9,6 +9,8 @@ export function runTutorial(sim,c,{maxSteps=18000,onStep=()=>{},reactionDelay=0,
    if(c.phase===0||c.phase===5){sim.aim(0,0,0);if(p.grounded&&sim.time>=next){sim.jump(0,key);key=key==='A'?'D':'A';next=sim.time+inputInterval;}}
    if(c.phase===1){if(p.inWater)sim.swim(0,false);else moveTo(sim.puddles[0]);}
    if(c.phase===2){if(!c.blockedTried){if(p.inWater){sim.fire(0);c.blockedAttack();}else moveTo(sim.puddles[0]);}else if(p.inWater)moveTo(sim.stage.practiceStart);else shoot({x:p.p.x,y:p.p.y,z:p.p.z-3});}
+   if(c.phase===6&&!c.mobile&&sim.chefs[0]?.unguarded&&p.feigning){sim.jump(0,key);key=key==='A'?'D':'A';}
+   if(c.phase===7)moveTo(sim.puddles[0]);
    if(c.phase===3){if(!c.tpsShot){c.setView('TPS');shoot(sim.players[1].p);}else if(!c.fpsSeen)c.setView('FPS');else if(!c.fpsHit){c.setView('FPS');shoot(sim.players[1].p);}else c.setView('TPS');}
   }
   sim.step();c.consume(sim.events);sim.events.length=0;onStep(sim,c,i);

@@ -1,4 +1,4 @@
-import {BUTTONS,buttonRect,defaults,loadSettings,saveSettings} from './mobile-settings.js';
+import {BUTTONS,buttonRect,buttonLayout,defaults,loadSettings,saveSettings} from './mobile-settings.js';
 export class MobileEditor {
  constructor(controls){
   this.controls=controls;let storage;try{storage=localStorage;}catch{}this.storage=storage;this.settings=loadSettings(storage);this.open=false;this.editing=false;this.selected='bitan';this.drag=null;
@@ -31,7 +31,7 @@ export class MobileEditor {
   if(this.editing){const b=this.draft.buttons[this.selected];this.size.value=b.scale;document.getElementById('mobileSelectedButton').textContent=BUTTONS[this.selected].name;document.getElementById('mobileButtonSizeValue').textContent=`${Math.round(b.scale*100)}%`;for(const [key,el]of this.preview)el.classList.toggle('selected',key===this.selected);}
  }
  insets(){if(!this.probe)return {};const css=getComputedStyle(this.probe);return Object.fromEntries(['left','right','top','bottom'].map(k=>[k,parseFloat(css.getPropertyValue(`padding-${k}`))||0]));}
- rect(key){return buttonRect(key,(this.draft||this.settings).buttons[key],innerWidth,innerHeight,this.insets());}
+ rect(key){if(!this.editing)return buttonLayout(this.settings.buttons,innerWidth,innerHeight,this.insets())[key];return buttonRect(key,(this.draft||this.settings).buttons[key],innerWidth,innerHeight,this.insets());}
  layout(){if(!this.panel)return;for(const key of Object.keys(BUTTONS)){const r=this.rect(key);const el=this.editing?this.preview.get(key):this.controls.elements.get(key);if(!el)continue;Object.assign(el.style,{position:'fixed',left:`${r.x-r.size/2}px`,top:`${r.y-r.size/2}px`,right:'auto',bottom:'auto',width:`${r.size}px`,height:`${r.size}px`,minWidth:'0',minHeight:'0',fontSize:`${(key==='bitan'?22:key==='view'?11:13)*(this.draft||this.settings).buttons[key].scale}px`});if(this.editing){const position=`${BUTTONS[key].name} 横${Math.round(r.x/innerWidth*100)}% 縦${Math.round(r.y/innerHeight*100)}%`;el.setAttribute('aria-label',position);if(key===this.selected){const output=document.getElementById('mobileLayoutPosition');if(output)output.textContent=position;}}}const status=this.controls.autoStatus;if(status){const r=this.rect('attack'),safe=this.insets();Object.assign(status.style,{left:`${Math.max(safe.left||12,Math.min(innerWidth-88-(safe.right||12),r.x-44))}px`,top:`${Math.max(safe.top||8,Math.min(innerHeight-32-(safe.bottom||12),r.y-16))}px`});}this.placeTutorial();}
  placeTutorial(){
   if(!document.body.style?.setProperty)return;

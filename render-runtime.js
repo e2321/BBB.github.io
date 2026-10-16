@@ -17,9 +17,9 @@ export class MenuRenderGate {
  snapshot(){return {menuDraws:this.draws,menuFramesSkipped:this.skipped};}
 }
 export class SingleFrameLoop {
- constructor(draw,{request=callback=>requestAnimationFrame(callback),cancel=id=>cancelAnimationFrame(id)}={}){this.draw=draw;this.request=request;this.cancel=cancel;this.running=false;this.pending=null;this.starts=0;this.frames=0;this.maxPending=0;this.callback=now=>{this.pending=null;if(!this.running)return;try{this.draw(now);this.frames++;}finally{this.schedule();}};}
+ constructor(draw,{request=callback=>requestAnimationFrame(callback),cancel=id=>cancelAnimationFrame(id),onError=error=>console.error('[BBB frame]',error)}={}){this.errors=0;this.lastError='';this.onError=onError;this.draw=draw;this.request=request;this.cancel=cancel;this.running=false;this.pending=null;this.starts=0;this.frames=0;this.maxPending=0;this.callback=now=>{this.pending=null;if(!this.running)return;try{this.draw(now);this.frames++;}catch(error){this.errors++;const message=String(error?.message||error);if(this.lastError!==message){this.lastError=message;try{this.onError(error);}catch{}}}finally{this.schedule();}};}
  schedule(){if(this.running&&this.pending===null){this.pending=this.request(this.callback);this.maxPending=Math.max(this.maxPending,1);}}
  start(){if(this.running)return false;this.running=true;this.starts++;this.schedule();return true;}
  stop(){this.running=false;if(this.pending!==null)this.cancel(this.pending);this.pending=null;}
- snapshot(){return {activeLoops:this.running?1:0,pendingFrames:this.pending===null?0:1,starts:this.starts,frames:this.frames,maxPending:this.maxPending};}
+ snapshot(){return {activeLoops:this.running?1:0,pendingFrames:this.pending===null?0:1,starts:this.starts,frames:this.frames,maxPending:this.maxPending,errors:this.errors,lastError:this.lastError};}
 }
