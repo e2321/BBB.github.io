@@ -4,4 +4,5 @@ export const CHARACTERS=Object.freeze([entry('fish','魚',true,0,'fish'),entry('
 const byId=new Map(CHARACTERS.map(c=>[c.id,c]));
 export const characterDefinition=id=>byId.get(id);
 export const knownCharacter=id=>byId.has(id)?id:'fish';
-export const assetURL=path=>(import.meta.env?.BASE_URL||'/')+path;
+export const joinAssetURL=(base,path)=>String(base||'/').replace(/\/+$/,'')+'/'+String(path).replace(/^\/+/,'');
+export const assetURL=path=>joinAssetURL(import.meta.env?.BASE_URL||'/',path);
