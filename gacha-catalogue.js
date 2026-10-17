@@ -1,0 +1,13 @@
+import {CHARACTERS,characterDefinition} from './character-registry.js';
+import {WEAPONS,weaponDefinition} from './weapon-registry.js';
+const pool=(id,name,enabled,entries=[])=>Object.freeze({id,name,enabled,category:{character:.8,weapon:.2},entries});
+export const GACHA_POOLS=Object.freeze([
+ pool('sea','海のなかまたちガチャ',true,[{id:'starfish',type:'character',weight:.4},{id:'octopus',type:'character',weight:.4},{id:'fork',type:'weapon',weight:.08},{id:'ladle',type:'weapon',weight:.06},{id:'spatula',type:'weapon',weight:.06}]),
+ pool('deep','深海ガチャ',false),pool('crustacean','甲殻類ガチャ',false),pool('fun','おもしろ海洋生物ガチャ',false)]);
+export const poolDefinition=id=>GACHA_POOLS.find(p=>p.id===id);
+export function itemDefinition(type,id,inventory){const d=type==='weapon'?weaponDefinition(id):type==='character'?characterDefinition(id):null;return d?{id,type,name:d.name,thumbnail:d.thumbnail||d.thumbnailURL,modelId:d.modelId||d.id,enabled:true,owned:type==='weapon'?!!inventory?.ownsWeapon?.(id):!!inventory?.owns?.(id)}:null;}
+export function validatePool(p){if(!p?.enabled)return false;const sum=p.entries.reduce((n,e)=>n+e.weight,0);if(Math.abs(sum-1)>1e-9)throw new Error('ガチャ排出率の合計が100%ではありません');for(const type of ['character','weapon']){if(Math.abs(p.entries.filter(e=>e.type===type).reduce((n,e)=>n+e.weight,0)-p.category[type])>1e-9)throw new Error('ガチャのカテゴリ確率が一致しません');}for(const e of p.entries)if(!itemDefinition(e.type,e.id)||!Number.isFinite(e.weight)||e.weight<=0)throw new Error('未実装または無効な排出対象です');return true;}
+const invalidPools=new Set();for(const p of GACHA_POOLS)if(p.enabled)try{validatePool(p);}catch(error){invalidPools.add(p.id);console.warn('[BBB gacha catalogue]',p.id,error.message);}
+export const poolAvailable=id=>!!poolDefinition(id)?.enabled&&!invalidPools.has(id);
+export function drawItem(random=Math.random,poolId='sea',guaranteedCharacter=false){const p=poolDefinition(poolId);if(!poolAvailable(poolId)||!validatePool(p))throw new Error('このガチャは準備中です');const rand=()=>{const n=random();if(!Number.isFinite(n))throw new Error('抽選乱数が不正です');return Math.max(0,Math.min(.999999999,n));};const type=guaranteedCharacter?'character':rand()<p.category.character?'character':'weapon',entries=p.entries.filter(e=>e.type===type),sum=entries.reduce((n,e)=>n+e.weight,0);const roll=rand();let cumulative=0;for(const e of entries){cumulative+=e.weight/sum;if(roll<cumulative-1e-12)return {...itemDefinition(type,e.id),weight:e.weight};}return {...itemDefinition(type,entries.at(-1).id)};}
+export function poolComplete(data,id='sea'){const p=poolDefinition(id);return !!p?.enabled&&p.entries.every(e=>(e.type==='weapon'?data.ownedWeapons:data.owned)?.includes(e.id));}

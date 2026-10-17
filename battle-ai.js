@@ -1,3 +1,4 @@
+import {weaponFor} from './weapon-registry.js';
 import {BATTLE,BOT_RULES,BOT_COMBO_RULES,BOT_CLOSE_AIM,BOT_DODGE_RULES,BOT_TARGET_RULES,KITCHEN_BOT_RULES,FEIGN_RULES,movementStrength,angleDelta,clamp} from './battle-rules.js';
 import {segmentBox} from './simulation.js';
 export const BOT_PREDICTIVE_SHOT_RATE=1/3;
@@ -8,7 +9,7 @@ export function botAimPoint(sim,shooter,target){
  let lead=0;
  if(predictive){
   const rx=target.p.x-origin.x,ry=target.p.y-origin.y,rz=target.p.z-origin.z,v=target.v;
-  const a=v.x*v.x+v.y*v.y+v.z*v.z-BATTLE.knifeSpeed**2,b=2*(rx*v.x+ry*v.y+rz*v.z),c=rx*rx+ry*ry+rz*rz,disc=b*b-4*a*c;
+  const a=v.x*v.x+v.y*v.y+v.z*v.z-(BATTLE.knifeSpeed*weaponFor(shooter.weapon).projectileSpeedMultiplier)**2,b=2*(rx*v.x+ry*v.y+rz*v.z),c=rx*rx+ry*ry+rz*rz,disc=b*b-4*a*c;
   if(Math.abs(a)<1e-8){if(b<0)lead=-c/b;}else if(disc>=0){const roots=[(-b-Math.sqrt(disc))/(2*a),(-b+Math.sqrt(disc))/(2*a)].filter(t=>t>0);if(roots.length)lead=Math.min(...roots);}
  }
  return {predictive,x:target.p.x+target.v.x*lead,y:target.p.y+target.v.y*lead,z:target.p.z+target.v.z*lead};
