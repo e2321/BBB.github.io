@@ -2,6 +2,8 @@ import {itemDefinition} from './gacha-catalogue.js';
 import {CATEGORY_NAMES} from './gacha-config.js';
 import {assetURL} from './character-registry.js';
 const el=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
+// Use the existing sound toggle for both regular and developer gacha reveals.
+export const gachaVideoMuted=(doc=globalThis.document)=>doc?.getElementById?.('sound')?.getAttribute?.('aria-pressed')==='false';
 export const gachaVideoPath=results=>'assets/gacha/videos/'+(results.some(r=>r.type==='character')?'rare':'normal')+'.mp4';
 export class GachaOverlay{
  constructor({host,results,cards,preview=()=>{},clearPreview=()=>{},sound=()=>{},closed=()=>{}}){
@@ -12,7 +14,7 @@ export class GachaOverlay{
  }
  later(fn,ms){this.timers.push(setTimeout(()=>{if(!this.ended&&!this.finished)fn();},ms));}
  playVideo(){
-  const video=this.video=el('video',undefined,'gacha-video');video.src=assetURL(gachaVideoPath(this.results));video.preload='auto';video.autoplay=true;video.muted=true;video.playsInline=true;video.controls=false;video.loop=false;video.setAttribute('playsinline','');video.setAttribute('aria-label',this.results.some(r=>r.type==='character')?'レア排出動画':'通常排出動画');
+  const video=this.video=el('video',undefined,'gacha-video');video.src=assetURL(gachaVideoPath(this.results));video.preload='auto';video.autoplay=true;video.muted=gachaVideoMuted();video.playsInline=true;video.controls=false;video.loop=false;video.setAttribute('playsinline','');video.setAttribute('aria-label',this.results.some(r=>r.type==='character')?'レア排出動画':'通常排出動画');
   this.videoStatus=el('p','演出動画を読み込んでいます… 結果は保存済みです。','gacha-video-status');this.playButton=el('button','タップして動画を再生','gacha-video-play');this.playButton.hidden=true;this.playButton.addEventListener('click',()=>this.tryPlay());this.stage.append(video,this.videoStatus,this.playButton);
   const listen=(name,fn)=>{const guarded=()=>{if(!this.ended&&!this.finished)fn();};video.addEventListener(name,guarded);this.mediaListeners.push([name,guarded]);};
   listen('playing',()=>{this.videoStarted=true;this.videoStatus.hidden=true;this.playButton.hidden=true;});
