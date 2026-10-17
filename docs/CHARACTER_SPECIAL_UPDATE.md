@@ -1,0 +1,69 @@
+# キャラクター性能・必殺技の更新（2026-10-18）
+
+## 実装
+- 通常対戦60秒を維持。復活1.5秒・復活無敵なし。通常／厨房のX/Z寸法を85%にし、床・壁・設備・水たまり・スポーン・コック巡回・CPU経路も調整。チュートリアルは時間無制限のまま。
+- 魚HP3／イカHP2／ヒトデHP4。共通設定の弾速・弾判定・ビタン速度・跳躍補正を、ソロ／オンラインの同じシミュレーションへ適用。旧ライフ設定の保存値は削除せず、対戦HPはキャラクター別を優先。
+- TPS/FPSの発射前にカメラ行列を更新。既存の中央レイから照準地点を求める処理と、銃口から壁までの判定を維持。イカの10度／必殺中15度の射線確認付き補助を追加。弾の追尾はなし。
+- ビタン成功+1、命中+3、撃破+5のサーバー共通ゲージ。イベントIDで重複防止。死ぬと効果解除、未使用ゲージは復活時に維持、試合終了で両方リセット。
+- 魚5秒：速度/BP1.5倍。イカ4秒：補助15度・攻撃間隔75%。ヒトデ5秒：水分消費0、回復・無敵は追加しない。Qまたはスマホの必殺ボタンで発動。HUDにゲージ・READY・残り秒数。
+- 虹色の実際のビタン周期／移動／入力受付／コンボ猶予／アニメーションを1.25倍へ連動。魚の必殺速度とは最大値1.5倍を採用。
+- コンボ音程と中央/HUD表示を共通の段階定義へ統一。旧倍率別CSSによる色・大きさの競合を除去。名前・称号の頭上表示を1.4倍に拡大。
+- スマホ右上はメニュー→設定→名前・称号。必殺ボタンも既存の配置・サイズ編集と保存に対応。
+- チュートリアルに実ビタン→補助充填→手動発動→効果体験を追加。単独ジャンプは復活させない。
+- 新規セーブは魚のみ初期所持。イカは通常ガチャのキャラクター15%枠へ追加。旧セーブのイカ所持・装備は保持。装備画面に性能と必殺技内容を表示。既存GLB・料金・補償は維持。
+
+## 確認結果
+- 最新重点テスト94件成功。キャラ別HP、ゲージ重複、能力終了、イカの遮蔽物、消費0、ガチャ移行、実入力によるチュートリアル完走、オンライン入力検証・再戦を含む。
+- 全体テスト初回：フロント394件中341成功・53失敗。固定HP4・ライフ設定優先・虹色1.5倍・イカ初期所持・旧アリーナ座標を前提にした期待値などが不一致。チュートリアル関連7件は新しい実践段階へ更新し、上記重点テストで成功。その他の旧テストの移行は残る。
+- サーバー全体初回57件中55成功・2失敗。2件はガチャの初期所持／排出対象と通信プロトコルの旧期待値を更新し、対象10件が全て成功。
+- Vite本番ビルド成功、GitHub Pages向け相対パスとGLB収録確認成功。既存の大きいJSチャンク警告あり。新しいライブラリ・外部アセットなし。
+- 実ブラウザ、実機スマホ、複数PC、本番Renderでの通信・描画は未確認。デプロイ・pushは実施していない。
+
+## 公開時
+クライアントとサーバーの通信仕様は kitchen-character-special-v3。RenderとGitHub Pagesを同じ変更に更新する必要がある。古いサーバーへ新クライアントだけを公開しない。公開前にユーザー確認が必要。
+
+## 変更ファイル
+- `arena-art.js`
+- `battle-ai.js`
+- `battle-presentation.js`
+- `battle-rules.js`
+- `battle-simulation.js`
+- `battle-stages.js`
+- `battle-view.js`
+- `character-combat.js`
+- `character-registry.js`
+- `equipment-ui.js`
+- `gacha-catalogue.js`
+- `gacha-config.js`
+- `gacha-overlay.js`
+- `gacha-store.js`
+- `game-protocol.js`
+- `game.js`
+- `home-ui.js`
+- `index.html`
+- `mobile-controls.js`
+- `mobile-input.js`
+- `mobile-settings.js`
+- `mobile-tutorial.js`
+- `mobile.css`
+- `neon-home.css`
+- `online-client.js`
+- `online-view.js`
+- `progression.js`
+- `ranked-ui.js`
+- `seafood-menu.js`
+- `server/src/admin.js`
+- `server/src/session.js`
+- `server/tests/admin.test.js`
+- `server/tests/character-combat.test.js`
+- `server/tests/friend-rooms.test.js`
+- `server/tests/rematch.test.js`
+- `style.css`
+- `tests/character-combat.test.js`
+- `tests/developer.test.js`
+- `tests/mobile-input.test.js`
+- `tests/tutorial-controller.js`
+- `tests/tutorial-view.test.js`
+- `tests/tutorial.test.js`
+- `tutorial-controller.js`
+- `wet-audio.js`

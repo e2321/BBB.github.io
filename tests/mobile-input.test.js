@@ -14,13 +14,14 @@ test('mobile tutorial text uses touch vocabulary without changing the PC hint or
 import {TutorialController} from '../tutorial-controller.js';
 test('all five tutorial phases complete using tap actions including actual water entry/exit, FPS hits and zero kills',()=>{
  const s=new BattleSimulation(7,'tutorial');s.start();const c=new TutorialController(s);c.mobile=true;let pointer=0,next=0,lastPhase=-2;
- const tap=new TapInput({flop:key=>{if(c.phase===-1)c.begin();s.jump(0,key);},view:()=>c.setView(c.view==='TPS'?'FPS':'TPS'),attack:()=>{const p=s.players[0];if(s.waterAt(p.p,p.inWater)){s.fire(0);c.blockedAttack();return;}const o=s.muzzle(p),target=c.phase===3?s.players[1].p:{x:p.p.x,y:p.p.y,z:p.p.z-3};s.fire(0,{x:target.x-o.x,y:target.y-o.y,z:target.z-o.z});}});
+ const tap=new TapInput({flop:key=>{if(c.phase===-1)c.begin();s.jump(0,key);},special:()=>s.special(0),view:()=>c.setView(c.view==='TPS'?'FPS':'TPS'),attack:()=>{const p=s.players[0];if(s.waterAt(p.p,p.inWater)){s.fire(0);c.blockedAttack();return;}const o=s.muzzle(p),target=c.phase===3?s.players[1].p:{x:p.p.x,y:p.p.y,z:p.p.z-3};s.fire(0,{x:target.x-o.x,y:target.y-o.y,z:target.z-o.z});}});
  const hit=action=>{tap.down(++pointer,action);tap.release(pointer);};
  for(let n=0;n<12000&&s.state==='PLAYING';n++){
   c.beforeStep();const p=s.players[0];if(lastPhase!==c.phase){lastPhase=c.phase;next=0;tap.reset();}
   const bitan=()=>{if(s.time>=next&&(p.grounded||p.inWater)){hit('bitan');next=s.time+(p.inWater?.35:.52);}};
   const move=target=>{s.aim(0,Math.atan2(p.p.x-target.x+p.v.x*.2,p.p.z-target.z+p.v.z*.2),0);bitan();};
   if(c.phase===-1||c.phase===0||c.phase===5){s.aim(0,0,0);bitan();}
+  else if(c.phase===8){if(p.specialGauge>=100&&!c.practiceCast)hit('special');s.aim(0,s.time*2,0);bitan();}
   else if(c.phase===1){if(!p.inWater)move(s.puddles[0]);}
   else if(c.phase===2){if(!c.blockedTried){if(p.inWater)hit('attack');else move(s.puddles[0]);}else if(p.inWater)move(s.stage.practiceStart);else hit('attack');}
   else if(c.phase===7)move(s.puddles[0]);

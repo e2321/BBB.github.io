@@ -7,6 +7,7 @@ export function runTutorial(sim,c,{maxSteps=18000,onStep=()=>{},reactionDelay=0,
    const moveTo=target=>{sim.aim(0,Math.atan2(p.p.x-target.x+p.v.x*.2,p.p.z-target.z+p.v.z*.2),0);if(p.inWater)sim.swim(0);else if(p.grounded&&sim.time>=next){sim.jump(0,key);key=key==='A'?'D':'A';next=sim.time+inputInterval;}};
    const shoot=target=>{const o=sim.muzzle(p);sim.fire(0,{x:target.x-o.x,y:target.y-o.y,z:target.z-o.z});};
    if(c.phase===0||c.phase===5){sim.aim(0,0,0);if(p.grounded&&sim.time>=next){sim.jump(0,key);key=key==='A'?'D':'A';next=sim.time+inputInterval;}}
+   if(c.phase===8){if(p.specialGauge>=100&&!c.practiceCast){sim.special(0);c.consume(sim.events);sim.events=[];}sim.aim(0,sim.time*2,0);if(p.grounded&&sim.time>=next){sim.jump(0,key);key=key==='A'?'D':'A';next=sim.time+inputInterval;}}
    if(c.phase===1){if(p.inWater)sim.swim(0,false);else moveTo(sim.puddles[0]);}
    if(c.phase===2){if(!c.blockedTried){if(p.inWater){sim.fire(0);c.blockedAttack();}else moveTo(sim.puddles[0]);}else if(p.inWater)moveTo(sim.stage.practiceStart);else shoot({x:p.p.x,y:p.p.y,z:p.p.z-3});}
    if(c.phase===6&&!c.mobile&&sim.chefs[0]?.unguarded&&p.feigning){sim.jump(0,key);key=key==='A'?'D':'A';}

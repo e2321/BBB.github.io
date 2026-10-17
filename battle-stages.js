@@ -9,3 +9,9 @@ export const BATTLE_STAGES={
  kitchen:{id:'kitchen',name:'厨房',playable:true,obstacles:KITCHEN_OBSTACLES,walls:ARENA_WALLS,puddles:PUDDLES,spawns:SPAWNS,ceiling:4.1,boosts:boosts([[-3,-6],[5,2],[-3,5]]),chefs:[{id:0,x:-9,z:0,patrol:[[-10,0],[-10,-10],[-3,-10],[-3,2]]},{id:1,x:9,z:0,patrol:[[10,0],[10,10],[6,10],[6,0]]},{id:2,x:0,z:10,patrol:[[0,10],[-4,10],[-4,4],[4,4]]}]},
 };
 export function battleStage(id='normal'){const stage=BATTLE_STAGES[id];if(!stage?.playable)throw new Error('このステージは選択できません。');return stage;}
+
+// Shrink only competitive arenas; the tutorial keeps its original course.
+export const ARENA_SCALE=.85;
+const planar=p=>({...p,x:p.x*ARENA_SCALE,z:p.z*ARENA_SCALE});
+const box=o=>({...o,min:planar(o.min),max:planar(o.max)});
+for(const id of ['normal','kitchen']){const s=BATTLE_STAGES[id];s.halfSize=15*ARENA_SCALE;s.obstacles=s.obstacles.map(box);s.walls=s.walls.map(box);s.puddles=s.puddles.map(p=>({...planar(p),radius:p.radius*ARENA_SCALE}));s.spawns=s.spawns.map(planar);s.boosts=s.boosts.map(i=>({...i,p:planar(i.p)}));s.chefs=s.chefs.map(c=>({...planar(c),patrol:c.patrol.map(([x,z])=>[x*ARENA_SCALE,z*ARENA_SCALE])}));}

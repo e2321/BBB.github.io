@@ -24,7 +24,7 @@ export class AdminService{
   else if(type==='resetCoins')store.commit({...store.data,coins:0});
   else if(type==='resetTest'){s.store=freshTest();s.rank=new RankStore({getItem:()=>null,setItem(){}},s.store);s.rankDifficulty=null;}
   else if(type==='unlock'){const ids=body.id==='all'?CHARACTERS.map(c=>c.id):[body.id];if(ids.some(id=>!characterDefinition(id)))throw error(400,'不明なキャラクターです。');store.commit({...store.data,owned:[...new Set([...store.data.owned,...ids])]});}
-  else if(type==='resetOwned')store.commit({...store.data,owned:['fish','squid'],selected:'fish',ownedWeapons:['knife'],equippedWeapon:'knife',ownedEffects:defaultOwnedEffects(),equippedEffects:defaultEffects()});
+  else if(type==='resetOwned')store.commit({...store.data,owned:['fish'],selected:'fish',ownedWeapons:['knife'],equippedWeapon:'knife',ownedEffects:defaultOwnedEffects(),equippedEffects:defaultEffects()});
   else if(type==='select'){if(!store.select(body.id))throw error(400,'TEST未所持です。');}
   else if(type==='unlockWeapons')store.commit({...store.data,ownedWeapons:WEAPONS.map(w=>w.id)});
   else if(type==='equipWeapon'){if(!store.equipWeapon(body.id))throw error(400,'TEST未所持武器です。');}

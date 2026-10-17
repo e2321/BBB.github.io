@@ -1,7 +1,7 @@
 export const MOBILE_SETTINGS_KEY='bbb.mobileControls.v1';
 // Touch camera only: previous base was 0.85. PC mouse scaling is unchanged.
 export const TOUCH_LOOK_BASE=1.3;
-export const BUTTONS={bitan:{name:'ビタン！',size:96},attack:{name:'攻撃',size:82},view:{name:'TPS/FPS',size:52}};
+export const BUTTONS={bitan:{name:'ビタン！',size:96},attack:{name:'攻撃',size:82},special:{name:'必殺',size:66},view:{name:'TPS/FPS',size:52}};
 export const defaults=()=>({sensitivity:1,autoFire:false,buttons:Object.fromEntries(Object.keys(BUTTONS).map(k=>[k,{x:null,y:null,scale:1}]))});
 const finite=(v,min,max)=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
 export function validateSettings(value){
@@ -18,7 +18,7 @@ export function saveSettings(storage,value){try{storage.setItem(MOBILE_SETTINGS_
 export function buttonRect(key,setting,width,height,insets={}){
  const l=Math.max(12,insets.left||0),r=Math.max(12,insets.right||0),t=Math.max(8,insets.top||0),b=Math.max(12,insets.bottom||0);
  const size=Math.min(BUTTONS[key].size*setting.scale,width-l-r,height-t-b);
- const positions={bitan:[l+size/2,height-b-size/2],attack:[width-r-size/2,height-b-size/2],view:[width-r-size/2,height-b-104-size/2]};
+ const positions={bitan:[l+size/2,height-b-size/2],attack:[width-r-size/2,height-b-size/2],special:[width-r-92-size/2,height-b-size/2],view:[width-r-size/2,height-b-104-size/2]};
  const [x,y]=setting.x===null?positions[key]:[setting.x*width,setting.y*height];
  return {x:Math.max(l+size/2,Math.min(width-r-size/2,x)),y:Math.max(t+size/2,Math.min(height-b-size/2,y)),size};
 }

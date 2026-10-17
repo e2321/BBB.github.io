@@ -13,11 +13,11 @@ export class ArenaArt{
  build(){const v=this.view,s=v.sim,q=this.profile,steelMap=this.texture('steel'),tile=this.texture('tile'),wall=this.texture('wall');tile.repeat.set(this.kitchen?12:6,this.kitchen?12:6);wall.repeat.set(12,2);steelMap.repeat.set(1,2);
  this.steel=this.mat({color:'#b9c6c5',map:steelMap,metalness:.72,roughness:.39,envMapIntensity:.65});this.trim=this.mat({color:'#173f43',roughness:.59,metalness:.28});this.cream=this.mat({color:'#dddfcc',roughness:.8});this.gold=this.mat({color:'#dca756',roughness:.55,metalness:.25});this.dark=this.mat({color:'#172c30',roughness:.82});this.light=this.mat({color:'#e7ebda',emissive:'#f7ce8f',emissiveIntensity:.8,roughness:.6});
  const floorMat=this.mat({map:tile,color:this.kitchen?'#d3dbd2':'#d4c2a4',roughness:this.kitchen?.49:.66,metalness:this.kitchen?.09:.04});if(this.quality!=='low'){floorMat.bumpMap=tile;floorMat.bumpScale=.012;}
- const floor=this.box(this.root,[30,.2,30],[0,-.1,0],floorMat);floor.name='art-floor';floor.receiveShadow=true;
+ const floor=this.box(this.root,[s.stage.halfSize*2||30,.2,s.stage.halfSize*2||30],[0,-.1,0],floorMat);floor.name='art-floor';floor.receiveShadow=true;
  this.wallMat=this.mat({map:wall,color:this.kitchen?'#e9eee0':'#c0d0c7',roughness:.78});
  for(const o of s.obstacles){const size=[o.max.x-o.min.x,o.max.y-o.min.y,o.max.z-o.min.z],p=[(o.min.x+o.max.x)/2,(o.min.y+o.max.y)/2,(o.min.z+o.max.z)/2],boundary=s.stage.walls.includes(o),mat=boundary?this.wallMat:o.max.y<.3?this.gold:this.kitchen?this.steel:this.trim;const m=this.box(this.root,size,p,mat,boundary?0:Math.min(.055,...size.map(n=>n/8)));m.name='collider:'+o.id;m.castShadow=true;m.receiveShadow=true;v.meshes.push(m);if(!boundary)this.equipment(o,p,size);}
- if(s.stage.id==='kitchen'){const ceiling=this.box(this.root,[30,.08,30],[0,s.stage.ceiling+.04,0],this.cream);ceiling.name='art-ceiling';v.meshes.push(ceiling);}
- const half=s.stage.id==='tutorial'?6:15;this.boundary(half);this.batchDetails();this.water();this.lighting();this.shadows();this.setRenderQuality(this.quality);
+ if(s.stage.id==='kitchen'){const ceiling=this.box(this.root,[s.stage.halfSize*2||30,.08,s.stage.halfSize*2||30],[0,s.stage.ceiling+.04,0],this.cream);ceiling.name='art-ceiling';v.meshes.push(ceiling);}
+ const half=s.stage.id==='tutorial'?6:(s.stage.halfSize||15);this.boundary(half);this.batchDetails();this.water();this.lighting();this.shadows();this.setRenderQuality(this.quality);
  }
  equipment(o,p,size){const [x,y,z]=p,[sx,sy,sz]=size;if(o.max.y<.3){this.box(this.detail,[sx*.88,.012,sz*.75],[x,o.max.y-.004,z],this.trim);return;}if(!this.kitchen){this.box(this.detail,[sx*.94,.09,sz*.98],[x,o.max.y-.08,z],this.gold);for(const dz of [-.32,.32])this.box(this.detail,[sx*.88,.035,.02],[x,y+dz,z+sz/2+.008],this.steel);return;}
  // Seams/handles remain within the original solid fixture's footprint.
@@ -29,9 +29,9 @@ export class ArenaArt{
  boundary(half){const wallDepth=.025,edge=half-.03;
  for(const side of [-1,1]){this.box(this.detail,[.035,1.05,25],[side*(half-.04),.54,0],this.trim);for(let z=-10;z<=10;z+=5){this.box(this.detail,[.04,.12,3.5],[side*edge,2.67,z],this.gold);if(this.quality!=='low'){const window=this.box(this.detail,[.025,.95,2.9],[side*(edge-.02),1.9,z],this.steel,.01);window.material=this.cream;for(let i=0;i<4;i++)this.box(this.detail,[.035,.025,2.7],[side*(edge-.045),1.6+i*.18,z],this.trim);}}}
  for(const z of [-13.01,12.01])if(half===6){this.box(this.detail,[11.9,.08,.025],[0,2.75,z],this.gold);}
- if(half===15){for(const side of [-1,1]){this.box(this.detail,[29.8,1.02,.03],[0,.55,side*14.97],this.trim);this.box(this.detail,[29.8,.12,.03],[0,2.8,side*14.96],this.gold);for(let x=-10;x<=10;x+=5){this.box(this.detail,[.09,3,.04],[x,1.5,side*14.95],this.steel);}}}
+ if(half!==6){for(const side of [-1,1]){this.box(this.detail,[half*2-.2,1.02,.03],[0,.55,side*(half-.03)],this.trim);this.box(this.detail,[half*2-.2,.12,.03],[0,2.8,side*(half-.04)],this.gold);for(let x=-10;x<=10;x+=5){this.box(this.detail,[.09,3,.04],[x,1.5,side*(half-.05)],this.steel);}}}
  this.sign(this.kitchen?'BBB / SERVICE KITCHEN':'BBB / FISH MARKET',this.kitchen?'FRESH CATCH  •  PREP / BATTLE / REPEAT':'BITAN BITAN BATTLE  /  EST. 2026',[0,2.15,half===6?-13.01:-half+.04],this.kitchen?5.5:7);
- if(half===15){this.sign('冷水補給 / WATER','RECOVER • REJOIN THE BATTLE',[-7,1.9,14.93],4,Math.PI);this.sign('捌かれるな！！','FRESH FISH. FIERCE RIVALS.',[7,1.9,14.93],4,Math.PI);}
+ if(half!==6){this.sign('冷水補給 / WATER','RECOVER • REJOIN THE BATTLE',[-7,1.9,half-.07],4,Math.PI);this.sign('捌かれるな！！','FRESH FISH. FIERCE RIVALS.',[7,1.9,half-.07],4,Math.PI);}
  // Lamps, wall-mounted shelves, crockery and utensils occupy the boundary clearance only.
  const plateGeo=new THREE.CylinderGeometry(.22,.22,.035,this.profile.segments*2);this.geometries.push(plateGeo);
  for(const side of [-1,1])for(let i=0;i<this.profile.props+1;i++){const z=-8+i*6,x=side*(half-.24);this.box(this.detail,[.38,.045,1.6],[x,1.65,z],this.steel,.02);for(let j=0;j<3;j++){const plate=new THREE.Mesh(plateGeo,this.cream);plate.position.set(x,1.7+j*.04,z-.36);this.detail.add(plate);}if(this.kitchen){for(let j=0;j<3;j++)this.box(this.detail,[.025,.4,.08],[side*(half-.09),2.13,z+.1+j*.24],j===0?this.gold:this.steel,.01);}this.box(this.detail,[.07,.09,1.8],[side*(half-.16),2.93,z],this.light);}

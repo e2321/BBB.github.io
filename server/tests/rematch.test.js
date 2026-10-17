@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Session} from '../src/session.js';
+import {combatRules} from '../../character-combat.js';
 const make=n=>{const s=new Session('ABC234');for(let i=0;i<n;i++)s.add(`u${i}`,`Name${i}`);return s;};
 const ready=s=>{for(const m of s.members.values())s.ready(m.id,true);};
 const finish=s=>{for(let i=0;i<5580;i++)s.step();assert.equal(s.phase,'RESULT');assert.equal(s.sim.state,'FINISHED');};
 test('two and four humans play three rounds in one room with stable names and colors and full reset',()=>{
  for(const n of [2,4]){const s=make(n);ready(s);s.start('u0');const identity=s.lobby().players.map(p=>[p.id,p.name,p.color,p.slot]);
-  for(let round=1;round<=3;round++){assert.equal(s.round,round);assert.equal(s.sim.time,0);assert.equal(s.sim.state,'COUNTDOWN');assert.ok(s.sim.players.every(p=>p.points===0&&p.combo===0&&p.kills===0&&p.water===100&&p.hp===3&&!p.dead&&p.boostUntil===0));assert.equal(s.sim.hearts,undefined);assert.ok(s.sim.boosts.every(i=>i.active&&i.respawnAt===0));assert.equal(s.sim.sashimi.length,0);assert.deepEqual(s.lobby().players.map(p=>[p.id,p.name,p.color,p.slot]),identity);
+  for(let round=1;round<=3;round++){assert.equal(s.round,round);assert.equal(s.sim.time,0);assert.equal(s.sim.state,'COUNTDOWN');assert.ok(s.sim.players.every(p=>p.points===0&&p.combo===0&&p.kills===0&&p.water===100&&p.hp===combatRules(p).hp&&!p.dead&&p.boostUntil===0));assert.equal(s.sim.hearts,undefined);assert.ok(s.sim.boosts.every(i=>i.active&&i.respawnAt===0));assert.equal(s.sim.sashimi.length,0);assert.deepEqual(s.lobby().players.map(p=>[p.id,p.name,p.color,p.slot]),identity);
    finish(s);const results=s.snapshot().result;assert.deepEqual(results,s.snapshot().result);assert.equal(results.length,4);assert.equal(s.code,'ABC234');
    if(round<3){for(let i=0;i<n;i++){assert.equal(s.requestRematch(`u${i}`,true,round),true);assert.equal(s.phase,i===n-1?'MATCH':'REMATCH');}assert.equal(s.requestRematch('u0',true,round),false);}
   }
