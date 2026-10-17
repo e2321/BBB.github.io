@@ -1,0 +1,5 @@
+export const HOME_MODES=[{id:'QUICK',name:'クイックマッチ',icon:'🌐',description:'みんなと気軽にオンライン対戦！'},{id:'ONLINE',name:'友達対戦',icon:'🤝',description:'ルームを作って友達と対戦！'},{id:'BATTLE',name:'ソロ対戦',icon:'🏆',description:'自由設定でCPUと対戦、RPを集めよう！'},{id:'TUTORIAL',name:'チュートリアル',icon:'🐟',description:'ビタンビタンから楽しく練習！'}];
+export const HOME_MODE_KEY='bbb.homeMode.v1';
+export function normalizeMode(value){const aliases={normal:'BATTLE',ranked:'BATTLE',solo:'BATTLE',SOLO:'BATTLE',SOLO_RANKED:'BATTLE',SOLO_NORMAL:'BATTLE','通常ソロ':'BATTLE','ソロランク戦':'BATTLE',quick:'QUICK',friends:'ONLINE'};const id=aliases[value]||value;return HOME_MODES.some(m=>m.id===id)?id:'TUTORIAL';}
+export class HomeModeStore{constructor(storage){try{this.storage=storage??globalThis.localStorage;const saved=this.storage?.getItem(HOME_MODE_KEY);let raw;try{raw=JSON.parse(saved);}catch{raw=saved;}this.mode=normalizeMode(raw?.mode||raw);}catch{this.mode='TUTORIAL';}}select(mode){this.mode=normalizeMode(mode);try{this.storage?.setItem(HOME_MODE_KEY,JSON.stringify({version:1,mode:this.mode}));}catch{}return this.mode;}}
+export const homeMode=new HomeModeStore();

@@ -10,3 +10,5 @@ export function selectedMaxHP(element,storage){const value=Number(element?.value
 export const chefCount=value=>Number.isInteger(Number(value))&&Number(value)>=0&&Number(value)<=3?Number(value):2;
 export function loadChefCount(storage){try{storage??=globalThis.localStorage;const v=storage?.getItem('bbb.chefCount');return v===null||v===undefined?2:chefCount(v);}catch{return 2;}}
 export function saveChefCount(value,storage){const n=chefCount(value);try{(storage??globalThis.localStorage)?.setItem('bbb.chefCount',String(n));}catch{}return n;}
+
+export function selectedChefCount(element,storage){const raw=element?.value,n=Number(raw);return raw!==undefined&&raw!==''&&Number.isInteger(n)&&n>=0&&n<=3?n:loadChefCount(storage);}

@@ -4,7 +4,7 @@ import {segmentBox} from './simulation.js';
 export const BOT_PREDICTIVE_SHOT_RATE=1/3;
 export const botAttackRate=()=>BOT_RULES.attackRate;
 let lastDifficulty,lastSkill;
-export function rankAIProfile(difficulty){const d=Number.isFinite(difficulty)?clamp(difficulty,.8,1.45):1;if(d===lastDifficulty)return lastSkill;lastDifficulty=d;return lastSkill=Object.freeze({decision:clamp(1/d,.7,1.3),aim:clamp(1/d,.72,1.3),attack:clamp(d,.8,1.35),continueChance:clamp(BOT_COMBO_RULES.continueChance+(d-1)*.35,.3,.98),refillOffset:(d-1)*12,dodgeChance:clamp(.7+(d-1)*.65,.5,1),range:clamp(d,.85,1.2),preferredDistance:4+(d-1)*2,closeReaction:Math.max(.16,BOT_CLOSE_AIM.reaction/d)});}
+export function rankAIProfile(difficulty){const d=Number.isFinite(difficulty)?clamp(difficulty,.75,1.45):1;if(d===lastDifficulty)return lastSkill;lastDifficulty=d;return lastSkill=Object.freeze({decision:clamp(1/d,.7,1.4),aim:clamp(1/d,.72,1.4),attack:clamp(d,.75,1.35),continueChance:clamp(BOT_COMBO_RULES.continueChance+(d-1)*.35,.3,.98),refillOffset:(d-1)*12,dodgeChance:clamp(.7+(d-1)*.65,.5,1),range:clamp(d,.85,1.2),preferredDistance:4+(d-1)*2,closeReaction:Math.max(.16,BOT_CLOSE_AIM.reaction/d)});}
 
 // Select once per attack. All knives then keep the original straight trajectory.
 export function botAimPoint(sim,shooter,target){
