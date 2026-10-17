@@ -1,12 +1,13 @@
+import {openModes,setHomeQuality} from './home-browser.js';
 import {test,expect} from '@playwright/test';
-async function ready(page){await page.goto('/');await page.locator('#quality').selectOption('LOW');await page.waitForFunction(()=>window.__game?.snapshot().assetReady,null,{timeout:150000});}
+async function ready(page){await page.goto('/');await setHomeQuality(page,'LOW');await page.waitForFunction(()=>window.__game?.snapshot().assetReady,null,{timeout:150000});}
 
 test('BBB description and countdown show 3 2 1 START with cosmetic flops, frozen rules and no held input leakage',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await ready(page);await expect(page.locator('.battle-pitch')).toContainText('これは、単純なFPSではない。');
  for(const stage of ['normal','kitchen']){
   if(stage==='kitchen')await page.locator('#battleStageKitchen').click();
   if(stage==='kitchen')await expect(page.locator('#battleStageDescription')).toContainText('厨房ではコックも襲ってくる！');
-  await page.locator('#start').click();await page.evaluate(()=>{const b=window.__game.battle;b.sim.debugPaused=true;b.sim.countdownElapsed=0;b.sim.countdownValue=3;b.update(0);});
+  await openModes(page);await page.locator('#start').click();await page.evaluate(()=>{const b=window.__game.battle;b.sim.debugPaused=true;b.sim.countdownElapsed=0;b.sim.countdownValue=3;b.update(0);});
   await expect(page.locator('#battleCountdownValue')).toHaveText('3');await expect(page.locator('#battleTime')).toHaveText('90');await expect(page.locator('#crosshair')).toBeHidden();await expect(page.locator('#battleRules')).toBeHidden();
   const before=await page.evaluate(()=>window.__game.battle.snapshot());await page.keyboard.press('Space');await page.mouse.click(640,400);await page.keyboard.press('a');await page.evaluate(()=>window.__game.battle.step(12));
   const warm=await page.evaluate(()=>{const b=window.__game.battle;return {snapshot:b.snapshot(),model:b.models[0].root.position.y};});expect(warm.model).toBeGreaterThan(before.players[0].p.y);expect(warm.snapshot.players.map(p=>p.p)).toEqual(before.players.map(p=>p.p));expect(warm.snapshot.players.every(p=>p.points===0&&p.water===100&&p.combo===0&&!p.feigning)).toBe(true);expect(warm.snapshot.projectiles).toBe(0);expect(warm.snapshot.time).toBe(0);expect(warm.snapshot.chefs.map(c=>({x:c.x,z:c.z}))).toEqual(before.chefs.map(c=>({x:c.x,z:c.z})));
@@ -20,7 +21,7 @@ test('BBB description and countdown show 3 2 1 START with cosmetic flops, frozen
 });
 
 test('kitchen shows one red minus-1000 failure, preserves safe escape and animates chef windup and sashimi death',async({page})=>{
- const errors=[];page.on('pageerror',e=>errors.push(e.message));await ready(page);await page.locator('#battleStageKitchen').click();await page.locator('#start').click();await page.waitForFunction(()=>window.__game.battle.sim.state==='PLAYING',null,{timeout:20000});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));await ready(page);await page.locator('#battleStageKitchen').click();await openModes(page);await page.locator('#start').click();await page.waitForFunction(()=>window.__game.battle.sim.state==='PLAYING',null,{timeout:20000});
  await page.evaluate(()=>{const b=window.__game.battle,s=b.sim;s.debugPaused=true;for(const p of s.players)p.bot=false;const p=s.players[0],c=s.chefs[0];p.p={x:c.x,y:.28,z:c.z+1};Object.assign(p.prev,p.p);p.v={x:0,y:0,z:0};p.grounded=true;p.lastJump=-10;p.points=1500;c.nextAttack=999;s.feign(0);b.step(2);window.__game.audio.stop();});
  expect(await page.evaluate(()=>window.__game.battle.sim.chefs[0].state)).toBe('INSPECTING');await page.keyboard.down('a');await page.keyboard.up('a');await expect(page.locator('#battleChefBonus')).toHaveText('失敗！ -1000 BP');await expect(page.locator('#battleChefBonus')).toHaveClass(/failure/);expect(await page.locator('#battleChefBonus').evaluate(e=>getComputedStyle(e).color)).toBe('rgb(255, 110, 101)');expect(await page.evaluate(()=>window.__game.battle.sim.players[0].points)).toBe(500);expect(await page.evaluate(()=>window.__game.audio.stats().played.chefFail)).toBe(1);await page.screenshot({path:'tests/screenshots/chef-tactics-failure.png'});
  await page.keyboard.press('a');expect(await page.evaluate(()=>window.__game.battle.sim.players[0].points)).toBe(500);expect(await page.evaluate(()=>window.__game.audio.stats().played.chefFail)).toBe(1);

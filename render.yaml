@@ -18,3 +18,5 @@ services:
         value: production
       - key: ALLOWED_ORIGINS
         value: https://e2321.github.io
+      - key: BBB_ADMIN_PASSWORD
+        sync: false

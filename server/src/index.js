@@ -1,3 +1,6 @@
+import {adminRouter} from './admin.js';
+import fs from 'node:fs';
+if(process.env.NODE_ENV!=='production'&&process.env.RENDER!=='true'&&fs.existsSync(new URL('../.env.local',import.meta.url)))process.loadEnvFile(new URL('../.env.local',import.meta.url));
 import {createFriendRoom,healthInfo,joinAttempts,joinIP} from './friend-rooms.js';
 import {QuickMatcher} from './quick-match.js';
 import express from 'express';
@@ -19,6 +22,7 @@ matchMaker.controller.getCorsHeaders=req=>corsHeaders(req.headers?.origin,policy
 // Colyseus installs its own matchmaking HTTP handler before Express. Guard that handler too.
 const handlers=server.listeners('request').slice();server.removeAllListeners('request');
 server.on('request',(req,res)=>{if(!handleCors(req,res,policy))return;if(Number(req.headers['content-length']||0)>16384){res.writeHead(413);res.end();return;}let bytes=0;req.on('data',chunk=>{bytes+=chunk.length;if(bytes>16384)req.destroy();});for(const handler of handlers)handler.call(server,req,res);});
+app.use('/admin',adminRouter());
 app.get('/health',(_req,res)=>res.set('Cache-Control','no-store').status(200).json(healthInfo()));
 app.get('/sdk/colyseus.js',(_req,res)=>{const require=createRequire(import.meta.url);res.sendFile(path.join(path.dirname(require.resolve('colyseus.js/package.json')),'dist','colyseus.js'));});
 app.post('/rooms',async(req,res)=>{const now=Date.now();for(const [key,v] of attempts)if(v.until<now)attempts.delete(key);const ip=req.socket.remoteAddress,entry=attempts.get(ip)||{count:0,until:now+60000};entry.count++;attempts.set(ip,entry);if(entry.count>5||attempts.size>2000)return res.status(429).json({error:'しばらく待ってから作成してください'});if(rooms.size>=32)return res.status(503).json({error:'サーバーが混雑しています'});try{res.json(await createFriendRoom(rooms,reservedCodes,options=>matchMaker.createRoom('bbb',options)));}catch{res.status(503).json({error:'空きコードがないか、ルームを作成できませんでした。時間を置いて再試行してください'});}});

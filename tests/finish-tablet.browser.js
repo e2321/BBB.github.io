@@ -1,18 +1,19 @@
+import {openModes} from './home-browser.js';
 import {fileURLToPath} from 'node:url';
 import {test,expect} from '@playwright/test';
 async function ready(page){await page.goto('/');await page.waitForFunction(()=>window.__game?.snapshot().assetReady,null,{timeout:150000});}
 test('real result screens, lobby replay and tutorial completion survive denied storage',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await ready(page);
  await page.evaluate(()=>{window.originalSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(){throw new DOMException('test quota','QuotaExceededError');};});
- await page.locator('#battleMode').click();
+ await openModes(page);await page.locator('#battleMode').click();
  for(let round=0;round<3;round++){
-  await page.locator('#start').click();await page.evaluate(()=>{const b=window.__game.battle;b.sim.state='PLAYING';b.jump('A');b.step(45);b.sim.time=89.99;b.step(1);});
+  await openModes(page);await page.locator('#start').click();await page.evaluate(()=>{const b=window.__game.battle;b.sim.state='PLAYING';b.jump('A');b.step(45);b.sim.time=89.99;b.step(1);});
   await expect(page.locator('#battleResults')).toBeVisible();await expect(page.locator('#bpFloats > *')).toHaveCount(0);await expect(page.locator('#battleResultRows tr')).toHaveCount(4);
   if(round<2){await page.locator('#battleLobbyReturn').click();await expect(page.locator('#battleLobby')).toBeVisible();}
  }
  await page.locator('#battleResultTitle').click();await expect(page.locator('#overlay')).toBeVisible();expect(await page.locator('#overlay').evaluate(el=>el.scrollTop)).toBe(0);
- await page.locator('#start').click();const result=await page.evaluate(async()=>{const b=window.__game.battle,{runTutorial}=await import('/tests/tutorial-controller.js');const result=runTutorial(b.sim,b.tutorial);b.update(0);return result;});
- expect(result.complete).toBe(true);expect(result.combo).toBe(0);await expect(page.locator('#tutorialResults')).toBeVisible();await page.locator('#tutorialHome').click();await expect(page.locator('#overlay')).toBeVisible();await page.locator('#start').click();await expect(page.locator('#tutorialHUD')).toBeVisible();
+ await openModes(page);await page.locator('#start').click();const result=await page.evaluate(async()=>{const b=window.__game.battle,{runTutorial}=await import('/tests/tutorial-controller.js');const result=runTutorial(b.sim,b.tutorial);b.update(0);return result;});
+ expect(result.complete).toBe(true);expect(result.combo).toBe(0);await expect(page.locator('#tutorialResults')).toBeVisible();await page.locator('#tutorialHome').click();await expect(page.locator('#overlay')).toBeVisible();await openModes(page);await page.locator('#start').click();await expect(page.locator('#tutorialHUD')).toBeVisible();
  expect(await page.evaluate(()=>window.__game.renderDiagnostics().activeLoops)).toBe(1);expect(errors).toEqual([]);
  await page.evaluate(()=>Storage.prototype.setItem=window.originalSetItem);
 });

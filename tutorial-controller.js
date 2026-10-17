@@ -4,18 +4,18 @@ export const TUTORIAL_ROUTE=[[-4.2,2.5],[-4.2,-.5],[4.2,-.5],[4.2,-4.5],[-4.2,-4
 export const TUTORIAL_INTRO=['ここは、魚たちがビタンビタンする世界。','普通の対戦ゲームだと思った？','BBBの主役は、攻撃じゃない。','ビタンビタンだ！！'];
 export const TUTORIAL_GOALS=Object.freeze({introSeconds:4.4,flops:4,recovery:15,challengeCombo:30,challengeBP:100});
 export const TUTORIAL_STEPS=[
- {id:'bitan',name:'1 / 5 ビタンビタンが主役！',text:'AとDを交互に押して、ビタンビタン！',detail:'続けるほどコンボがつながる！ 50コンボで虹色状態に突入、1回50 BPのチャンス！'},
- {id:'water',name:'2 / 5 水分を取り戻そう',text:'ビタンビタンすると水分が減る！',detail:'マウスで青い水たまりへ向き、A / Dで進もう。入ったらキーを離して回復！ 虹色のうちに入ると+50ポイント（30%→80%、最大100%）。水中でコンボは終了。'},
- {id:'tradeoff',name:'3 / 5 水たまりは万能じゃない',text:'水たまりの中で、左クリックを試そう。',detail:'回復するか、外に出て戦うか。判断が大事！'},
- {id:'attack',name:'4 / 5 攻撃はビタンビタンの妨害',text:'TPSで練習CPUを狙い、左クリック！',detail:'倒す必要はない。まずは三人称視点で狙ってみよう。'},
+ {id:'bitan',name:'1 / 7 ビタンビタンが主役！',text:'AとDを交互に押して、ビタンビタン！',detail:'続けるほどコンボがつながる！ 50コンボで虹色状態に突入、1回50 BPのチャンス！'},
+ {id:'water',name:'2 / 7 水分を取り戻そう',text:'ビタンビタンすると水分が減る！',detail:'マウスで青い水たまりへ向き、A / Dで進もう。入ったらキーを離して回復！ 虹色のうちに入ると+50ポイント（30%→80%、最大100%）。水中でコンボは終了。'},
+ {id:'tradeoff',name:'3 / 7 水たまりは万能じゃない',text:'水たまりの中で、左クリックを試そう。',detail:'回復するか、外に出て戦うか。判断が大事！'},
+ {id:'attack',name:'4 / 7 攻撃はビタンビタンの妨害',text:'TPSで練習CPUを狙い、左クリック！',detail:'倒す必要はない。まずは三人称視点で狙ってみよう。'},
  null, // Reserved legacy phase ID; independent jump practice has been removed.
- {id:'challenge',name:'5 / 7 BBBチャレンジ',text:'A / Dで30コンボ＆100 BP！ 倒さなくてもクリア！',detail:'大切なのは、自分がビタンビタンし続けること！ 必要なら水たまりへ。'},
- {id:'surprise',name:'6 / 7 コックをだまそう',text:'止まって死んだふり。「今だ！」でA / D！',detail:'コックが確認して油断するまで待とう。奇襲成功で+1000 BP＆50コンボ！'},
- {id:'rainbowWater',name:'7 / 7 虹色で水たまりへ',text:'虹色のまま、青い水たまりへ！',detail:'通常は50コンボで虹色！ 1回50 BP・アニメ約1.5倍・水分消費0.6。水たまりで+50ポイント回復！ 練習中は虹色を維持します。'},
+ {id:'challenge',name:'7 / 7 BBBチャレンジ',text:'A / Dで30コンボ＆100 BP！ 倒さなくてもクリア！',detail:'大切なのは、自分がビタンビタンし続けること！ 必要なら水たまりへ。'},
+ {id:'surprise',name:'5 / 7 コックをだまそう',text:'止まって死んだふり。「今だ！」でA / D！',detail:'コックが確認して油断するまで待とう。奇襲成功で+1000 BP＆50コンボ！'},
+ {id:'rainbowWater',name:'6 / 7 虹色で水たまりへ',text:'虹色のまま、青い水たまりへ！',detail:'通常は50コンボで虹色！ 1回50 BP・アニメ約1.5倍・水分消費0.6。水たまりで+50ポイント回復！ 練習中は虹色を維持します。'},
 ];
 export class TutorialController{
  constructor(sim){this.sim=sim;this.reset();}
- reset(){const s=this.sim;this.phase=-1;this.introStart=s.time;this.phaseStart=s.time;this.flops=0;this.adCombo=0;this.lastAD=-Infinity;this.lastLand=-Infinity;this.recovered=0;this.blockedTried=false;this.outsideShot=false;this.tpsShot=false;this.fpsSeen=false;this.fpsShot=false;this.fpsHit=false;this.cpuHit=false;this.jumped=false;this.challengeBP=0;this.complete=false;this.pauseCPU=false;this.view='TPS';this.times=[s.time];this.feedback='';this.feedbackUntil=0;this.previousWater=100;s.tutorialPhase='intro';s.practiceTarget=null;
+ reset(){const s=this.sim;this.phase=-1;this.introStart=s.time;this.phaseStart=s.time;this.flops=0;this.adCombo=0;this.lastAD=-Infinity;this.lastLand=-Infinity;this.recovered=0;this.blockedTried=false;this.outsideShot=false;this.tpsShot=false;this.fpsSeen=false;this.fpsShot=false;this.fpsHit=false;this.cpuHit=false;this.jumped=false;this.challengeBP=0;this.complete=false;this.specialRecovery=false;this.pauseCPU=false;this.view='TPS';this.times=[s.time];this.feedback='';this.feedbackUntil=0;this.previousWater=100;s.tutorialPhase='intro';s.practiceTarget=null;
   s.spawns=[s.stage.practiceStart,{x:-3,y:BATTLE.bodyY,z:9},{x:3,y:BATTLE.bodyY,z:10}];this.place(s.stage.practiceStart);
   for(const p of s.players)if(p.id!==0){p.spectator=true;p.bot=false;p.dead=true;p.hp=0;p.deadUntil=Infinity;p.invUntil=Infinity;}
   for(const c of s.chefs)c.tutorialDisabled=true;
@@ -23,7 +23,7 @@ export class TutorialController{
  place(position){const p=this.sim.players[0];Object.assign(p.p,position);Object.assign(p.prev,position);Object.assign(p.v,{x:0,y:0,z:0});Object.assign(p,{grounded:true,buffer:null,lastJump:-10,jumpStart:-10,lastKey:'',inputKey:'',acceleration:0,feigning:false,still:0,inWater:false,yaw:0,desiredYaw:0,aimActive:true,slideUntil:0});p.surpriseWindows=[];this.sim.updateWet(p);}
  announce(message,seconds=2){this.feedback=message;this.feedbackUntil=this.sim.time+seconds;this.sim.emit('tutorialFeedback',{message});}
  begin(){if(this.phase===-1)this.next();}
- next(){if(this.complete)return;const s=this.sim,p=s.players[0];this.phase++;if(this.phase===4)this.phase=5;s.tutorialPhase=TUTORIAL_STEPS[this.phase].id;this.phaseStart=s.time;this.times.push(s.time);p.buffer=null;p.slideUntil=0;
+ next(){if(this.complete)return;const s=this.sim,p=s.players[0];this.phase=({[-1]:0,0:1,1:2,2:3,3:6,6:7,7:5})[this.phase];s.tutorialPhase=TUTORIAL_STEPS[this.phase].id;this.phaseStart=s.time;this.times.push(s.time);p.buffer=null;p.slideUntil=0;
   if(this.phase===1){p.water=Math.min(45,p.water);this.previousWater=p.water;this.announce('水分管理の練習：水分を45%に調整しました。',3);}
   if(this.phase===3){this.view='TPS';this.clearPracticeShots();this.spawnCPU();}
   if(this.phase===5){this.challengeBP=0;this.adCombo=0;s.resetCombo(p,'tutorialChallenge');this.place(s.stage.practiceStart);this.spawnCPU();this.nextCPUAttack=s.time+4.5;}
@@ -49,7 +49,7 @@ export class TutorialController{
  setView(value){if(!['TPS','FPS'].includes(value)||this.view===value)return;this.view=value;if(this.phase!==3)return;this.clearPracticeShots();if(value==='FPS'&&this.tpsShot){this.fpsSeen=true;this.announce('FPSに切り替わった！ 左クリックで練習CPUを狙おう。');}if(value==='TPS'&&this.fpsHit){this.announce('視点はいつでもVで切り替え！ でも主役はビタンビタンだ！！');this.next();}}
  consume(events){const s=this.sim,p=s.players[0];for(const e of [...events]){
   if(this.phase===6&&e.type==='chefBonus'&&e.id===0){this.next();continue;}
-  if(this.phase===7&&e.type==='rainbowWater'&&e.id===0&&e.amount===50){this.complete=true;s.state='FINISHED';this.times.push(s.time);for(const k of s.projectiles)k.active=false;s.emit('tutorialClear',{time:s.time});continue;}
+  if(this.phase===7&&e.type==='rainbowWater'&&e.id===0&&e.amount===50){this.specialRecovery=true;this.announce('水分+50回復！ 最後は自分で30コンボをつなごう！',3);this.next();continue;}
   if(e.type==='respawn'&&e.id===0){this.place(s.stage.practiceStart);this.adCombo=0;this.announce('この段階から再開！ BPや達成済みの練習はそのまま。',3);}
   if(e.type==='comboReset'&&e.id===0)this.adCombo=0;
   if(e.type==='hit'&&e.owner===0&&e.id===1&&this.phase===3){this.cpuHit=true;if(this.view==='FPS'&&this.fpsSeen&&this.fpsShot){this.fpsHit=true;this.announce('命中！ Vでもう一度TPSへ。主役は攻撃じゃない、ビタンビタンだ！！',3);}s.players[1].hp=s.balance.hp;}
@@ -63,8 +63,8 @@ export class TutorialController{
  }
  if(this.phase===1){if(p.inWater&&p.water>this.previousWater)this.recovered+=p.water-this.previousWater;this.previousWater=p.water;if(this.recovered>=TUTORIAL_GOALS.recovery-1e-7){this.announce('水分が回復した！ でも、水たまりは万能じゃない。',3);this.next();}}
  this.checkGoal();}
- checkGoal(){const s=this.sim,p=s.players[0];if(!this.complete&&this.phase===5&&s.state==='PLAYING'&&!p.dead&&p.grounded&&!p.inWater&&this.adCombo>=TUTORIAL_GOALS.challengeCombo&&this.challengeBP>=TUTORIAL_GOALS.challengeBP){this.announce('30コンボ達成！ 次はコックへの奇襲を体験しよう！');this.next();}}
- retry(){if(this.complete||!['PLAYING','PAUSED'].includes(this.sim.state)||this.sim.players[0].dead)return;const p=this.sim.players[0];this.place(this.sim.stage.practiceStart);this.sim.resetCombo(p,'tutorialRetry');this.adCombo=0;this.announce('練習位置へ戻った！ この段階から続けよう。');}
+ checkGoal(){const s=this.sim,p=s.players[0];if(!this.complete&&this.phase===5&&s.state==='PLAYING'&&!p.dead&&p.grounded&&!p.inWater&&this.adCombo>=TUTORIAL_GOALS.challengeCombo&&this.challengeBP>=TUTORIAL_GOALS.challengeBP){if(!this.specialRecovery)return;this.complete=true;s.state='FINISHED';this.times.push(s.time);for(const k of s.projectiles)k.active=false;s.emit('tutorialClear',{time:s.time});}}
+ retry(){if(this.complete||!['PLAYING','PAUSED'].includes(this.sim.state)||this.sim.players[0].dead)return;const p=this.sim.players[0];this.place(this.phase===6?{x:-1,y:BATTLE.bodyY,z:7}:this.sim.stage.practiceStart);this.sim.resetCombo(p,'tutorialRetry');this.adCombo=0;this.announce('練習位置へ戻った！ この段階から続けよう。');}
  repeatHelp(){this.announce(this.hint.detail,4);}
  get hint(){const s=this.sim,p=s.players[0];if(this.phase===-1)return {name:'BBB / FIRST BITAN',text:TUTORIAL_INTRO[Math.min(3,Math.floor((s.time-this.introStart)/1.1))],detail:'A / Dを押すと、すぐにビタンビタン練習へ！',progress:'攻撃じゃない。ビタンビタンが主役だ。'};const step=TUTORIAL_STEPS[this.phase];let text=step.text,detail=step.detail,progress='';
   if(this.phase===0)progress=`A → D → A → D　${Math.min(this.adCombo,4)} / 4 コンボ`;

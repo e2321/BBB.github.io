@@ -1,6 +1,7 @@
+import {setHomeQuality} from './home-browser.js';
 import {test,expect} from '@playwright/test';
 test('remote A/D contacts the deformed floor and keeps identity after rainbow',async({page})=>{
- const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');await page.locator('#quality').selectOption('LOW');await page.waitForFunction(()=>window.__game?.snapshot().assetReady,null,{timeout:150000});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');await setHomeQuality(page,'LOW');await page.waitForFunction(()=>window.__game?.snapshot().assetReady,null,{timeout:150000});
  const result=await page.evaluate(async()=>{
   const {OnlineBattleMode}=await import('/online-view.js'),{BattleSimulation}=await import('/battle-simulation.js'),{Box3}=await import('/node_modules/three/build/three.module.js');
   const old=window.__game.battle;old.dispose();const view=new OnlineBattleMode(old.scene,old.camera,old.source,old.effects,old.audio,old.chefFactory,1,()=>{}),s=new BattleSimulation();s.start();for(const p of s.players)p.bot=false;

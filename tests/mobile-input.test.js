@@ -27,5 +27,5 @@ test('all five tutorial phases complete using tap actions including actual water
   else if(c.phase===3){if(!c.tpsShot){if(c.view!=='TPS')hit('view');hit('attack');}else if(!c.fpsSeen)hit('view');else if(!c.fpsHit){if(c.view!=='FPS')hit('view');hit('attack');}else hit('view');}
   s.step();c.consume(s.events);s.events=[];
  }
- assert.equal(c.complete,true);assert.equal(s.state,'FINISHED');assert.equal(c.adCombo,0);assert.ok(c.challengeBP>=100);assert.ok(c.recovered>=15-1e-6);assert.equal(c.blockedTried,true);assert.equal(c.outsideShot,true);assert.equal(c.fpsSeen,true);assert.equal(c.fpsHit,true);assert.equal(c.jumped,false);assert.equal(s.players[0].kills,0);assert.ok(s.time<120);
+ assert.equal(c.complete,true);assert.equal(s.state,'FINISHED');assert.equal(c.adCombo,30);assert.ok(c.challengeBP>=100);assert.ok(c.recovered>=15-1e-6);assert.equal(c.blockedTried,true);assert.equal(c.outsideShot,true);assert.equal(c.fpsSeen,true);assert.equal(c.fpsHit,true);assert.equal(c.jumped,false);assert.equal(s.players[0].kills,0);assert.ok(s.time<120);
 });

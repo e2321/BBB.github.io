@@ -1,6 +1,7 @@
+import {setHomeQuality} from './home-browser.js';
 import {test,expect} from '@playwright/test';
 test('online results vote, lobby CPU toggle and next-round rendering retain one view',async({page})=>{
- const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');await page.locator('#quality').selectOption('LOW');await page.waitForFunction(()=>window.__game?.snapshot().assetReady,null,{timeout:150000});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');await setHomeQuality(page,'LOW');await page.waitForFunction(()=>window.__game?.snapshot().assetReady,null,{timeout:150000});
  const result=await page.evaluate(async()=>{
   const {OnlineFriends}=await import('/online-client.js'),{OnlineBattleMode}=await import('/online-view.js'),{BattleSimulation}=await import('/battle-simulation.js'),old=window.__game.battle;old.dispose();
   const handlers={},packets=[];let views=0,lobbyReturns=0;const room={sessionId:'u0',reconnectionToken:'test',send:(type,data)=>packets.push({type,data}),onMessage:(type,fn)=>handlers[type]=fn,onError:()=>{},onLeave:()=>{},leave:()=>Promise.resolve()};

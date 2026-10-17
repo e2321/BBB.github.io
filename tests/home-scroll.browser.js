@@ -14,7 +14,7 @@ for(const [name,width,height,mobile] of [['desktop short',1280,600,false],['mobi
   expect(top.top).toBeGreaterThanOrEqual(0);expect(top.x).toBeLessThanOrEqual(top.w+1);expect(top.touch).toBe('pan-y');
   await expect(page.locator('.mobile-play-banner')).toContainText('PCでもスマホでもビタンビタン！');
   await home.evaluate(el=>el.scrollTop=el.scrollHeight);
-  const end=await home.evaluate(el=>({bottom:el.querySelector(':scope > .settings').getBoundingClientRect().bottom,viewport:el.getBoundingClientRect().bottom}));expect(end.bottom).toBeLessThanOrEqual(end.viewport+1);
+  const end=await home.evaluate(el=>({bottom:el.querySelector('#homeModes').getBoundingClientRect().bottom,viewport:el.getBoundingClientRect().bottom}));expect(end.bottom).toBeLessThanOrEqual(end.viewport+1);
   await home.evaluate(el=>el.scrollTop=0);expect(await page.locator('h1').evaluate(el=>el.getBoundingClientRect().top)).toBeGreaterThanOrEqual(0);
   await page.evaluate(()=>{const p=document.querySelector('#homePanel');p.hidden=false;document.querySelector('#homePanelContent').textContent='実績・カスタマイズ・設定 '.repeat(1000);});
   const panel=page.locator('#homePanel');expect(await panel.evaluate(el=>getComputedStyle(el).overflowY)).toBe('auto');await panel.evaluate(el=>el.scrollTop=el.scrollHeight);expect(await panel.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
