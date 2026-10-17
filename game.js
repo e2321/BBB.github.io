@@ -69,6 +69,7 @@ const developer=new DeveloperUI({endpoint:online.url,production:import.meta.env.
   if(command.field==='bp')p.points=value;if(command.field==='water')p.water=value;if(command.field==='hp'){s.balance.hp=Math.max(s.balance.hp,value);p.hp=value;p.dead=false;p.deadUntil=0;}
   if(command.field==='combo'||command.field==='rainbow'){p.combo=command.field==='rainbow'?(value?Math.max(50,p.combo):0):value;p.multiplier=comboMultiplier(p.combo);p.lastComboLanding=s.time;if(p.combo>=50)s.emit('rainbow',{id:0,p:{...p.p}});}
   if(command.field==='chefs'){s.setChefCount(value);match.syncChefs();}
+  if(command.field==='effectPreview'||command.field==='effectLoad'){match.previewEffect(value,command.field==='effectLoad');s.debugPaused=false;}
   if(command.field==='weaponDebug')match.weaponDebugEnabled=!match.weaponDebugEnabled;
   if(command.field==='wallTest'){Object.assign(p.p,{x:-13,y:BATTLE.bodyY,z:0});Object.assign(p.prev,p.p);Object.assign(p.v,{x:0,y:0,z:0});p.inWater=false;p.feigning=false;p.dead=false;p.grounded=true;p.invUntil=s.time+10;p.nextFire=s.time;match.yaw=Math.PI/2;match.pitch=0;s.aim(0,Math.PI/2,0);s.fire(0,{x:-1,y:0,z:0});s.debugPaused=false;}
   if(command.field==='notifications')for(let i=0;i<100;i++)match.floatBP(50,3);

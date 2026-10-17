@@ -1,3 +1,5 @@
+import {EFFECTS,effectDefinition,defaultEffects,defaultOwnedEffects} from '../../effect-registry.js';
+import {GACHA_POOLS} from '../../gacha-catalogue.js';
 import {drawItem,poolDefinition,poolComplete} from '../../gacha-catalogue.js';
 import {WEAPONS,weaponDefinition} from '../../weapon-registry.js';
 import express from 'express';
@@ -20,14 +22,17 @@ export class AdminService{
   else if(type==='resetCoins')store.commit({...store.data,coins:0});
   else if(type==='resetTest')s.store=freshTest();
   else if(type==='unlock'){const ids=body.id==='all'?CHARACTERS.map(c=>c.id):[body.id];if(ids.some(id=>!characterDefinition(id)))throw error(400,'不明なキャラクターです。');store.commit({...store.data,owned:[...new Set([...store.data.owned,...ids])]});}
-  else if(type==='resetOwned')store.commit({...store.data,owned:['fish','squid'],selected:'fish',ownedWeapons:['knife'],equippedWeapon:'knife'});
+  else if(type==='resetOwned')store.commit({...store.data,owned:['fish','squid'],selected:'fish',ownedWeapons:['knife'],equippedWeapon:'knife',ownedEffects:defaultOwnedEffects(),equippedEffects:defaultEffects()});
   else if(type==='select'){if(!store.select(body.id))throw error(400,'TEST未所持です。');}
   else if(type==='unlockWeapons')store.commit({...store.data,ownedWeapons:WEAPONS.map(w=>w.id)});
   else if(type==='equipWeapon'){if(!store.equipWeapon(body.id))throw error(400,'TEST未所持武器です。');}
+  else if(type==='unlockEffects')store.commit({...store.data,ownedEffects:EFFECTS.map(e=>e.id)});
+  else if(type==='equipEffect'){if(!store.equipEffect(body.slot,body.id))throw error(400,'TEST未所持またはスロット不一致です。');}
+  else if(type==='probabilities')result=GACHA_POOLS.map(p=>({id:p.id,enabled:p.enabled,category:p.category,entries:p.entries}));
   else if(type==='draw'){if(![1,10].includes(body.count))throw error(400,'1回か10連を選んでください。');if(store.data.coins<(body.count===10?GACHA.tenCost:GACHA.cost))throw error(400,'TESTコイン不足です。');if(poolComplete(store.data,body.pool||'sea'))throw error(400,'コンプリート済みです。');result=store.drawBatch(body.count,this.random,body.pool||'sea');}
-  else if(type==='simulate'){if(![1,10,100,1000].includes(body.count))throw error(400,'指定された抽選回数は無効です。');const p=poolDefinition(body.pool||'sea');if(!p?.enabled)throw error(400,'準備中のガチャです。');const counts=Object.fromEntries(p.entries.map(c=>[c.id,0]));for(let i=0;i<body.count;i++)counts[drawItem(this.random,p.id,body.count===10&&i===9).id]++;result=Object.entries(counts).map(([id,count])=>{const e=p.entries.find(e=>e.id===id);return {id,type:e.type,count,actual:count/body.count*100,expected:100*(body.count===10?.9*e.weight+(e.type==='character'?.1*e.weight/.8:0):e.weight)};});}
-  else if(type==='revealTest'){if(!['new','duplicate','weapon'].includes(body.kind))throw error(400,'無効な演出テストです');result=[{id:body.kind==='weapon'?'fork':'starfish',type:body.kind==='weapon'?'weapon':'character',duplicate:body.kind==='duplicate',refund:body.kind==='duplicate'?50:0}];}
-  else if(type==='game'){if(!['start','bp','combo','water','hp','rainbow','chefs','notifications','surprise','stop','weaponDebug','wallTest'].includes(body.field))throw error(400,'不明なTEST操作です。');const ranges={bp:[0,1e7],combo:[0,1000],water:[0,100],hp:[1,4],rainbow:[0,1],chefs:[0,3]};if(ranges[body.field]){number(body.value,...ranges[body.field]);if(body.field!=='water'&&!Number.isInteger(body.value))throw error(400,'整数で指定してください。');}result={field:body.field,value:body.value};}
+  else if(type==='simulate'){if(![1,10,100,1000].includes(body.count))throw error(400,'指定された抽選回数は無効です。');const p=poolDefinition(body.pool||'sea');if(!p?.enabled)throw error(400,'準備中のガチャです。');const counts=Object.fromEntries(p.entries.map(c=>[c.id,0]));for(let i=0;i<body.count;i++)counts[drawItem(this.random,p.id).id]++;result=Object.entries(counts).map(([id,count])=>{const e=p.entries.find(e=>e.id===id);return {id,type:e.type,count,actual:count/body.count*100,expected:100*e.weight};});}
+  else if(type==='revealTest'){if(!['new','duplicate','weapon','splash','presentation'].includes(body.kind))throw error(400,'無効な演出テストです');result=[{id:body.kind==='splash'?'splash-rainbow':body.kind==='presentation'?'trail-prism':body.kind==='weapon'?'fork':'starfish',type:['splash','presentation','weapon'].includes(body.kind)?body.kind:'character',duplicate:body.kind==='duplicate',refund:body.kind==='duplicate'?50:0}];}
+  else if(type==='game'){if(!['start','bp','combo','water','hp','rainbow','chefs','notifications','surprise','stop','weaponDebug','wallTest','effectPreview','effectLoad'].includes(body.field))throw error(400,'不明なTEST操作です。');if(body.field==='effectPreview'&&!effectDefinition(body.value))throw error(400,'不明なエフェクトです。');const ranges={bp:[0,1e7],combo:[0,1000],water:[0,100],hp:[1,4],rainbow:[0,1],chefs:[0,3]};if(ranges[body.field]){number(body.value,...ranges[body.field]);if(body.field!=='water'&&!Number.isInteger(body.value))throw error(400,'整数で指定してください。');}result={field:body.field,value:body.value};}
   else if(!['metrics','modelLoad','modelFailure','fallback'].includes(type))throw error(400,'許可されていない管理操作です。');
   return {test:s.store.data,result,expiresAt:s.expiresAt};
  }

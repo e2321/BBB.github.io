@@ -19,7 +19,7 @@ test('admin fails closed when unconfigured, rate limits login and enforces expir
 test('TEST coins, ownership, selection, draws and pure simulations never mutate player collection or rooms',()=>{
  const before=JSON.stringify(collection.data),s=new AdminService({password:secret,random:()=>.1}),a=s.login(secret,'a').token,b=s.login(secret,'b').token;
  s.action(a,{type:'coins',value:10000});let r=s.action(a,{type:'draw',count:10});assert.equal(r.test.draws,10);assert.equal(r.test.owned.includes('starfish'),true);assert.equal(r.test.coins,9550);
- const snapshot=JSON.stringify(r.test);r=s.action(a,{type:'simulate',count:1000});assert.equal(r.result[0].count,1000);assert.equal(r.result[0].expected,40);assert.equal(JSON.stringify(r.test),snapshot);
+ const snapshot=JSON.stringify(r.test);r=s.action(a,{type:'simulate',count:1000});assert.equal(r.result[0].count,1000);assert.equal(r.result[0].expected,7.5);assert.equal(JSON.stringify(r.test),snapshot);
  assert.equal(s.session(b).store.data.coins,0);s.action(a,{type:'unlock',id:'all'});s.action(a,{type:'select',id:'octopus'});assert.equal(s.session(a).store.data.selected,'octopus');s.action(a,{type:'resetOwned'});assert.deepEqual(s.session(a).store.data.owned,['fish','squid']);
  const room=new Session('09');room.add('a','Actual Player');const bp=room.sim.players[0].points;s.action(a,{type:'game',field:'bp',value:100000,roomId:room.roomId});assert.equal(room.sim.players[0].points,bp);assert.equal(JSON.stringify(collection.data),before);
  for(const body of [{type:'roomBP',value:100},{type:'coins',value:-1},{type:'draw',count:1000},{type:'game',field:'hp',value:999},{type:'select',id:'bad'},{type:'simulate',count:2}])assert.throws(()=>s.action(a,body),e=>e.status===400);
