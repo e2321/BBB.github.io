@@ -1,3 +1,4 @@
+import {GAME_PROTOCOL} from '../game-protocol.js';
 import test from 'node:test';import assert from 'node:assert/strict';import {OnlineFriends} from '../online-client.js';
 class Node extends EventTarget{constructor(){super();this.hidden=false;this.value='';this.style={};this.children=[];}replaceChildren(){this.children=[];}append(n){this.children.push(n);}}
 function fixture(){const old=globalThis.document,nodes=new Map();globalThis.document={getElementById(id){if(!nodes.has(id))nodes.set(id,new Node());return nodes.get(id);},createElement:()=>new Node()};const f=new OnlineFriends(()=>({receive(){}}),()=>{},()=>{});f.enabled=true;f.sdk=async()=>{};f.ensureConnected=async()=>{};return{f,nodes,close(){f.leave(false);globalThis.document=old;}};}
@@ -13,13 +14,13 @@ test('friend joining preserves two-digit leading zero in lookup and Colyseus joi
 
 test('menu wake and repeated quick clicks share one health request and reserve exactly once',async()=>{
  const {f,close}=fixture(),oldLocation=globalThis.location;globalThis.location={protocol:'https:',origin:'https://example.invalid'};
- try{f.url='wss://fixture.invalid';f.ensureConnected=OnlineFriends.prototype.ensureConnected.bind(f);const d=defer();let health=0,reservations=0;f.api=async path=>{if(path==='/health'){health++;return d.promise;}assert.equal(path,'/quick-match');reservations++;return {};};f.client={consumeSeatReservation:async()=>room()};const menu=f.show(),quick=f.quickMatch();await f.quickMatch();assert.equal(health,1);d.resolve({ok:true});await Promise.all([menu,quick]);assert.equal(reservations,1);assert.equal(f.checking,false);assert.ok(f.room);
+ try{f.url='wss://fixture.invalid';f.ensureConnected=OnlineFriends.prototype.ensureConnected.bind(f);const d=defer();let health=0,reservations=0;f.api=async path=>{if(path==='/health'){health++;return d.promise;}assert.equal(path,'/quick-match');reservations++;return {};};f.client={consumeSeatReservation:async()=>room()};const menu=f.show(),quick=f.quickMatch();await f.quickMatch();assert.equal(health,1);d.resolve({ok:true,gameProtocol:GAME_PROTOCOL});await Promise.all([menu,quick]);assert.equal(reservations,1);assert.equal(f.checking,false);assert.ok(f.room);
  }finally{close();globalThis.location=oldLocation;}
 });
 
 test('cancel during health wake prevents reservation and retry uses a fresh connection task',async()=>{
  const {f,close}=fixture(),oldLocation=globalThis.location;globalThis.location={protocol:'https:',origin:'https://example.invalid'};
- try{f.url='wss://fixture.invalid';f.ensureConnected=OnlineFriends.prototype.ensureConnected.bind(f);const d=defer();let health=0,reservations=0;f.api=async path=>{if(path==='/health')return ++health===1?d.promise:{ok:true};reservations++;return {};};f.client={consumeSeatReservation:async()=>room()};const cancelled=f.quickMatch();f.cancelQuick();const next=f.quickMatch();d.resolve({ok:true});await Promise.all([cancelled,next]);assert.equal(health,2);assert.equal(reservations,1);assert.ok(f.room);
+ try{f.url='wss://fixture.invalid';f.ensureConnected=OnlineFriends.prototype.ensureConnected.bind(f);const d=defer();let health=0,reservations=0;f.api=async path=>{if(path==='/health')return ++health===1?d.promise:{ok:true,gameProtocol:GAME_PROTOCOL};reservations++;return {};};f.client={consumeSeatReservation:async()=>room()};const cancelled=f.quickMatch();f.cancelQuick();const next=f.quickMatch();d.resolve({ok:true,gameProtocol:GAME_PROTOCOL});await Promise.all([cancelled,next]);assert.equal(health,2);assert.equal(reservations,1);assert.ok(f.room);
  }finally{close();globalThis.location=oldLocation;}
 });
 
@@ -34,7 +35,7 @@ test('private create and code-join retry resume their own action after wake fail
 
 test('friend room request and SDK wait for successful health; cancellation during wake blocks both',async()=>{
  const {f,nodes,close}=fixture(),oldLocation=globalThis.location;globalThis.location={protocol:'https:',origin:'https://example.invalid'};
- try{f.url='wss://fixture.invalid';f.ensureConnected=OnlineFriends.prototype.ensureConnected.bind(f);const d=defer();let sdk=0,roomRequests=0;f.sdk=async()=>{sdk++;};f.api=async path=>{if(path==='/health')return d.promise;roomRequests++;return {};};const pending=f.join(true);assert.equal(nodes.get('onlineConnection').hidden,false);assert.match(nodes.get('onlineConnectionText').textContent,/オンラインサーバーを起動/);assert.equal(sdk,0);assert.equal(roomRequests,0);f.cancelQuick();d.resolve({ok:true});await pending;assert.equal(sdk,0);assert.equal(roomRequests,0);assert.equal(f.retryAction,null);
+ try{f.url='wss://fixture.invalid';f.ensureConnected=OnlineFriends.prototype.ensureConnected.bind(f);const d=defer();let sdk=0,roomRequests=0;f.sdk=async()=>{sdk++;};f.api=async path=>{if(path==='/health')return d.promise;roomRequests++;return {};};const pending=f.join(true);assert.equal(nodes.get('onlineConnection').hidden,false);assert.match(nodes.get('onlineConnectionText').textContent,/オンラインサーバーを起動/);assert.equal(sdk,0);assert.equal(roomRequests,0);f.cancelQuick();d.resolve({ok:true,gameProtocol:GAME_PROTOCOL});await pending;assert.equal(sdk,0);assert.equal(roomRequests,0);assert.equal(f.retryAction,null);
  }finally{close();globalThis.location=oldLocation;}
 });
 
@@ -47,3 +48,5 @@ test('all leading-zero codes are preserved in creation, lobby and clipboard; qui
  const descriptor=Object.getOwnPropertyDescriptor(globalThis,'navigator');let copied;Object.defineProperty(globalThis,'navigator',{configurable:true,value:{clipboard:{writeText:async code=>{copied=code;}}}});
  try{for(const code of ['00','01','09','10','99']){const {f,nodes,close}=fixture();try{f.api=async()=>({code,roomId:'internal',ticket:'ticket'});f.client={joinById:async(_id,options)=>{assert.equal(options.code,code);return room();}};await f.join(true);const lobby={code,host:'a',phase:'LOBBY',round:0,players:[{id:'a',slot:0,name:'A',connected:true}]};f.renderLobby(lobby);assert.equal(nodes.get('onlineRoomCode').textContent,code);assert.equal(await f.copyCode(),true);assert.equal(copied,code);f.renderLobby({...lobby,quick:true,code:'ABC234'});assert.equal(nodes.get('onlineRoomCode').textContent,'クイックマッチ');assert.equal(nodes.get('onlineCopy').hidden,true);assert.equal(await f.copyCode(),false);assert.equal(copied,code);}finally{close();}}}finally{if(descriptor)Object.defineProperty(globalThis,'navigator',descriptor);else delete globalThis.navigator;}
 });
+
+test('an outdated public server reports a deployment mismatch and never starts matchmaking',async()=>{const {f,nodes,close}=fixture(),oldLocation=globalThis.location;globalThis.location={protocol:'https:',origin:'https://example.invalid'};try{f.url='wss://fixture.invalid';f.ensureConnected=OnlineFriends.prototype.ensureConnected.bind(f);let reservations=0;f.api=async path=>{if(path==='/health')return {ok:true};reservations++;return {};};await f.quickMatch();assert.equal(reservations,0);assert.match(nodes.get('onlineStatus').textContent,/Render.*再デプロイ/);assert.equal(f.room,null);}finally{close();globalThis.location=oldLocation;}});

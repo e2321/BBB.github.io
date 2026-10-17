@@ -77,3 +77,9 @@ body.mobile-ui #overlay.arcade-home .mode-grid{grid-template-columns:1fr 1fr}bod
 @media(max-width:600px) and (max-height:450px) and (orientation:landscape){#overlay.arcade-home{grid-template-columns:minmax(0,1fr)}}
 
 #characterCards img{width:100%;max-height:100px;object-fit:contain}.gacha-result{padding:18px;color:#ffdf56;font-size:1.4em;font-weight:900;animation:gacha-reveal .65s ease-out both}@keyframes gacha-reveal{from{transform:scale(.8);opacity:.3}to{transform:scale(1);opacity:1}}
+
+/* The home entry opens the existing gacha, without starting a match. */
+.home-gacha{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:14px 16px;margin:14px 0;border:2px solid #ffd76b;border-radius:16px;background:linear-gradient(120deg,#123d63,#215b77);box-shadow:0 4px 0 #092d46;color:#fff5d4;min-width:0}
+.home-gacha>div{min-width:0;flex:1 1 220px}.home-gacha strong{font-size:17px}.home-gacha p{margin:5px 0}.home-gacha span,.home-gacha small{font-size:12px;overflow-wrap:anywhere}.home-gacha b{color:#ffe078;font-size:21px}
+#homeGacha{flex:0 1 auto;min-height:48px;max-width:100%;padding:12px 22px;border:2px solid #fff2af;border-radius:13px;background:linear-gradient(#ffe379,#ffb742);color:#382b14;font-size:17px;font-weight:900;box-shadow:0 4px 0 #ad6c22;cursor:pointer}#homeGacha:hover{filter:brightness(1.07)}#homeGacha:focus-visible{outline:3px solid white;outline-offset:4px}
+@media(max-height:450px) and (orientation:landscape){.home-gacha{padding:9px 12px;gap:8px;margin:10px 0}.home-gacha strong{font-size:14px}.home-gacha p{margin:2px 0}#homeGacha{padding:9px 14px;font-size:14px;min-height:44px}}
