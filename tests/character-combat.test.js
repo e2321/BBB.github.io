@@ -11,3 +11,15 @@ test('starfish special consumes no moisture, never heals, expires normally, and 
 test('combo stage labels and semitone pitch use a single definition',()=>{for(const [n,label,semitones]of [[1,'',0],[5,'GOOD!',2],[10,'GREAT!',4],[20,'EXCELLENT!',6],[35,'AMAZING!',9],[50,'RAINBOW!',12]]){assert.equal(comboStage(n).label,label);assert.equal(comboPitch(n),2**(semitones/12));}assert.equal(comboPitch(0),1);});
 test('fresh players must draw squid inside the unchanged 15% character category; previous ownership is retained',()=>{const c=new CollectionStore({getItem:()=>null,setItem(){}});assert.deepEqual(c.data.owned,['fish']);assert.equal(c.select('squid'),false);assert.equal(GACHA_POOLS[0].category.character,.15);assert.equal(drawItem(()=>0).id,'squid');const old=parseCollection({version:3,owned:['fish','squid'],selected:'squid',coins:500});assert.equal(old.selected,'squid');assert.equal(old.coins,500);c.claim('test',100);assert.equal(c.draw(()=>0).id,'squid');assert.equal(c.select('squid'),true);});
 test('tutorial ability stage requires a real flop, manual fever activation and experiencing it before returning to water practice',()=>{const s=game('fish','tutorial'),c=new TutorialController(s),p=s.players[0];c.begin();for(let i=0;i<4;i++){s.time+=.2;p.combo=i+1;c.consume([{type:'land',id:0,time:s.time,key:i%2?'D':'A',scored:true}]);}assert.equal(c.phase,8);assert.equal(p.specialGauge,0);s.time+=.2;c.consume([{type:'land',id:0,time:s.time,key:'A',scored:true}]);assert.equal(p.specialGauge,100);assert.ok(s.special(0));c.consume(s.events);s.events=[];s.time+=.2;c.consume([{type:'land',id:0,time:s.time,key:'D',scored:true}]);assert.equal(c.practiceFlopped,true);s.time=p.specialUntil+.01;c.beforeStep();assert.equal(c.phase,1);});
+
+test('resized normal and kitchen puddles retain full-character clearance from equipment and safe spawn positions',()=>{
+ for(const stage of ['normal','kitchen']){
+  const s=new BattleSimulation(19,stage);
+  for(const w of s.puddles){
+   const clearance=w.radius*1.14+BATTLE.bodyHalfLength+BATTLE.bodyRadius;
+   assert.ok(Math.max(Math.abs(w.x),Math.abs(w.z))+w.radius*1.14<s.stage.halfSize);
+   for(const p of s.spawns)assert.ok(Math.hypot(p.x-w.x,p.z-w.z)>clearance);
+   for(const o of s.arenaObstacles){const x=Math.max(o.min.x,Math.min(o.max.x,w.x)),z=Math.max(o.min.z,Math.min(o.max.z,w.z));assert.ok(Math.hypot(w.x-x,w.z-z)>clearance);}
+  }
+ }
+});

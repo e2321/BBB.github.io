@@ -19,7 +19,7 @@ test('countdown freezes all authoritative game state and accepts only cosmetic a
   assert.equal(s.jump(0,'A'),true);assert.equal(s.jump(0,'A'),false);advance(s,.5);assert.equal(s.jump(0,'D'),true);
   s.collectBoosts();assert.equal(s.damage(s.players[0],1),false);advance(s,2.49);
   assert.equal(s.state,'COUNTDOWN');assert.equal(s.time,0);assert.deepEqual(s.players.map(p=>p.p),positions);assert.deepEqual(s.chefs.map(c=>({x:c.x,z:c.z})),chefs);
-  assert.ok(s.players.every(p=>p.water===100&&p.points===0&&p.combo===0&&p.hp===BATTLE.hp&&p.boostUntil===0&&!p.feigning));assert.ok(s.boosts.every(b=>b.active));assert.ok(s.projectiles.every(k=>!k.active));
+  assert.ok(s.players.every(p=>p.water===100&&p.points===0&&p.combo===0&&p.hp===p.maxHP&&p.boostUntil===0&&!p.feigning));assert.ok(s.boosts.every(b=>b.active));assert.ok(s.projectiles.every(k=>!k.active));
   assert.ok(s.events.some(e=>e.type==='warmupLand'));advance(s,.01);assert.equal(s.state,'PLAYING');assert.equal(s.time,0);
   assert.deepEqual(s.events.filter(e=>e.type==='countdown').map(e=>e.value),[3,2,1,0]);assert.equal(s.events.filter(e=>e.type==='matchStart').length,1);
   assert.ok(s.players.every(p=>!p.buffer&&!p.inputKey&&p.acceleration===0&&p.slideUntil===0));s.step();assert.ok(s.time>0);assert.equal(s.jump(0,'A'),true);assert.equal(s.players[0].water,99);
@@ -33,22 +33,22 @@ test('two chefs chase the closest visible live fish including a CPU and remain o
  const other=s.chefs[1];s.players[1].p={x:other.x,y:.28,z:other.z-4};advance(s,.35);assert.equal(other.target,1);assert.equal(s.ranking.length,4);assert.equal(s.chefs.length,2);assert.ok(s.chefs.every(c=>c.points===undefined));
 });
 test('chef attacks have a visible windup, one damage and a cooldown; jump, retreat and equipment can evade',()=>{
- for(const scenario of ['hit','jump','retreat','wall']){const s=game(),c=s.chefs[0],p=s.players[0];s.updateFeign=()=>{};p.p={x:c.x,y:.28,z:c.z+1};c.nextAttack=0;s.step();assert.equal(c.state,'ATTACKING');advance(s,.4);assert.equal(p.hp,BATTLE.hp);
+ for(const scenario of ['hit','jump','retreat','wall']){const s=game(),c=s.chefs[0],p=s.players[0];s.updateFeign=()=>{};p.p={x:c.x,y:.28,z:c.z+1};c.nextAttack=0;s.step();assert.equal(c.state,'ATTACKING');advance(s,.4);assert.equal(p.hp,3);
   if(scenario==='jump'){s.jump(0,'A');}if(scenario==='retreat')p.p.z+=3;if(scenario==='wall')s.obstacles.push({min:{x:c.x-1,y:0,z:c.z+.3},max:{x:c.x+1,y:2,z:c.z+.5}});
-  advance(s,.36);assert.equal(p.hp,scenario==='hit'?BATTLE.hp-1:BATTLE.hp,scenario);if(scenario==='hit'){assert.ok(s.time-c.lastThrow<1/60);advance(s,2);assert.equal(p.hp,BATTLE.hp-1);}
+  advance(s,.36);assert.equal(p.hp,scenario==='hit'?2:3,scenario);if(scenario==='hit'){assert.ok(s.time-c.lastThrow<1/60);advance(s,2);assert.equal(p.hp,3-1);}
  }
 });
-test('chef deaths use existing sashimi and unlimited four-second respawns without BP theft',()=>{
+test('chef deaths use existing sashimi and unlimited 1.5-second respawns without BP theft',()=>{
  const s=game(),c=s.chefs[0],p=s.players[0];s.updateFeign=()=>{};p.p={x:c.x,y:.28,z:c.z+1};p.points=1800;p.hp=1;c.nextAttack=0;advance(s,.8);
  assert.equal(p.dead,true);assert.equal(p.hp,0);assert.equal(p.points,1800);assert.equal(s.sashimi.length,1);assert.equal(s.events.filter(e=>e.type==='kill').length,1);assert.equal(s.events.find(e=>e.type==='kill').killer,null);
- advance(s,4);assert.equal(p.dead,false);assert.equal(p.hp,BATTLE.hp);assert.equal(p.water,100);assert.equal(p.points,1800);assert.equal(s.ranking.length,4);
+ advance(s,4);assert.equal(p.dead,false);assert.equal(p.hp,3);assert.equal(p.water,100);assert.equal(p.points,1800);assert.equal(s.ranking.length,4);
 });
 test('feigning before a committed strike leads to inspection and can safely outlast its bonus window',()=>{
  const s=game(),c=s.chefs[0],p=s.players[0];p.p={x:c.x,y:.28,z:c.z+1};c.nextAttack=0;s.step();assert.equal(c.state,'ATTACKING');s.feign(0);advance(s,3);
- assert.equal(p.hp,BATTLE.hp);assert.equal(p.feigning,true);assert.equal(p.points,0);assert.equal(c.unguarded,false);assert.equal(c.ignoreSession,`0:${p.feignSession}`);
+ assert.equal(p.hp,3);assert.equal(p.feigning,true);assert.equal(p.points,0);assert.equal(c.unguarded,false);assert.equal(c.ignoreSession,`0:${p.feignSession}`);
 });
 test('a late feign in front of an already committed chef does not guarantee protection',()=>{
- const s=game(),c=s.chefs[0],p=s.players[0];p.p={x:c.x,y:.28,z:c.z+1};c.nextAttack=0;s.step();advance(s,CHEF_RULES.commitTime+.02);s.feign(0);advance(s,.4);assert.equal(p.hp,BATTLE.hp-1);
+ const s=game(),c=s.chefs[0],p=s.players[0];p.p={x:c.x,y:.28,z:c.z+1};c.nextAttack=0;s.step();advance(s,CHEF_RULES.commitTime+.02);s.feign(0);advance(s,.4);assert.equal(p.hp,3-1);
 });
 test('surprise has a 1.1-second unguarded window and a 0.6-second release deadline at different tick rates',()=>{
  assert.equal(FEIGN_RULES.unguarded,1.1);assert.equal(FEIGN_RULES.releaseWindow,.6);assert.equal(FEIGN_RULES.bonusDistance,1.8);

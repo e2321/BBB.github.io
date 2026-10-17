@@ -15,3 +15,6 @@ export const ARENA_SCALE=.85;
 const planar=p=>({...p,x:p.x*ARENA_SCALE,z:p.z*ARENA_SCALE});
 const box=o=>({...o,min:planar(o.min),max:planar(o.max)});
 for(const id of ['normal','kitchen']){const s=BATTLE_STAGES[id];s.halfSize=15*ARENA_SCALE;s.obstacles=s.obstacles.map(box);s.walls=s.walls.map(box);s.puddles=s.puddles.map(p=>({...planar(p),radius:p.radius*ARENA_SCALE}));s.spawns=s.spawns.map(planar);s.boosts=s.boosts.map(i=>({...i,p:planar(i.p)}));s.chefs=s.chefs.map(c=>({...planar(c),patrol:c.patrol.map(([x,z])=>[x*ARENA_SCALE,z*ARENA_SCALE])}));}
+
+for(const id of ['normal','kitchen'])BATTLE_STAGES[id].puddles[2].z=11.1;
+BATTLE_STAGES.kitchen.puddles[0].x=-11.1;BATTLE_STAGES.kitchen.puddles[1].x=11.1;
