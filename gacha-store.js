@@ -1,8 +1,10 @@
+import {BATTLE} from './battle-rules.js';
+import {bpCoinReward} from './coin-rewards.js';
 import {effectDefinition,defaultEffects,defaultOwnedEffects,sanitizePresentation} from './effect-registry.js';
 import {weaponDefinition} from './weapon-registry.js';
 import {drawItem,poolDefinition,poolComplete,GACHA_POOLS,ownershipList,itemDefinition} from './gacha-catalogue.js';
 import {CHARACTERS,characterDefinition} from './character-registry.js';
-export const GACHA=Object.freeze({cost:100,tenCost:900,duplicateRefund:50,match:20,win:10,achievement:15});
+export const GACHA=Object.freeze({cost:100,tenCost:900,duplicateRefund:50,achievement:15});
 export const GACHA_KEY='bbb.collection.v1';
 const fresh=()=>({version:3,ownedEffects:defaultOwnedEffects(),equippedEffects:defaultEffects(),coins:0,owned:['fish','squid'],selected:'fish',ownedWeapons:['knife'],equippedWeapon:'knife',completePools:[],history:[],lastResults:[],claims:[],lastDraw:null,draws:0});
 export function parseCollection(raw){const d=fresh();if(![1,2,3].includes(raw?.version))return d;d.coins=Number.isSafeInteger(raw.coins)&&raw.coins>=0?Math.min(raw.coins,1e9):0;d.owned=[...new Set([...d.owned,...(Array.isArray(raw.owned)?raw.owned:[]).filter(id=>characterDefinition(id))])];d.selected=d.owned.includes(raw.selected)?raw.selected:'fish';d.claims=Array.isArray(raw.claims)?raw.claims.filter(x=>typeof x==='string'&&x.length<200):[];d.draws=Number.isSafeInteger(raw.draws)&&raw.draws>=0?raw.draws:0;d.ownedWeapons=[...new Set(['knife',...(Array.isArray(raw.ownedWeapons)?raw.ownedWeapons:[]).filter(id=>weaponDefinition(id))])];d.equippedWeapon=d.ownedWeapons.includes(raw.equippedWeapon)?raw.equippedWeapon:'knife';d.ownedEffects=[...new Set([...defaultOwnedEffects(),...(Array.isArray(raw.ownedEffects)?raw.ownedEffects:[]).filter(id=>effectDefinition(id))])];d.equippedEffects=sanitizePresentation(raw.equippedEffects);for(const slot of Object.keys(d.equippedEffects))if(!d.ownedEffects.includes(d.equippedEffects[slot]))d.equippedEffects[slot]=defaultEffects()[slot];d.lastDraw=raw.lastDraw&&itemDefinition(raw.lastDraw.type||'character',raw.lastDraw.id)?{...raw.lastDraw,type:raw.lastDraw.type||'character'}:null;d.lastResults=Array.isArray(raw.lastResults)?raw.lastResults.filter(r=>r&&itemDefinition(r.type||'character',r.id)).slice(0,10):d.lastDraw?[d.lastDraw]:[];d.history=Array.isArray(raw.history)?raw.history.slice(-50):[];d.completePools=GACHA_POOLS.filter(p=>poolComplete(d,p.id)).map(p=>p.id);return d;}
@@ -17,7 +19,7 @@ export class CollectionStore{
  owns(id){return this.data.owned.includes(id);}
  commit(next){if(!this.storage)throw new Error('保存領域を利用できません');this.storage.setItem(GACHA_KEY,JSON.stringify(next));this.data=next;for(const fn of this.listeners){try{fn();}catch(error){console.warn('[BBB collection display]',error);}}}
  claim(key,amount){if(this.data.claims.includes(key)||!Number.isSafeInteger(amount)||amount<=0)return false;const next=structuredClone(this.data);next.claims.push(key);next.coins=Math.min(1e9,next.coins+amount);this.commit(next);return true;}
- rewardMatch(report,complete){if(!complete||!report?.key||report.seconds<89.99||!Number.isFinite(report.seconds))return false;return this.claim('match:'+report.key,GACHA.match+(report.winner?GACHA.win:0));}
+ rewardMatch(report,complete){if(!complete||!report?.key||report.seconds<BATTLE.duration-.01||!Number.isFinite(report.seconds))return false;return this.claim('match:'+report.key,bpCoinReward(report.earnedBP,report.rewardRank).coins);}
  select(id){if(!this.owns(id))return false;const next=structuredClone(this.data);next.selected=id;this.commit(next);return true;}
  reload(){try{const stored=this.storage?.getItem(GACHA_KEY);if(stored)this.data=parseCollection(JSON.parse(stored));}catch{}return this.data;}
  async drawLocked(random=Math.random,count=1,poolId='sea',requestKey=''){const run=()=>{this.reload();const results=this.drawBatch(count,random,poolId,requestKey);return count===1?results[0]:results;};return globalThis.navigator?.locks?globalThis.navigator.locks.request('bbb-collection-draw',async()=>run()):run();}

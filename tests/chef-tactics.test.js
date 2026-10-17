@@ -25,8 +25,8 @@ test('countdown freezes all authoritative game state and accepts only cosmetic a
   assert.ok(s.players.every(p=>!p.buffer&&!p.inputKey&&p.acceleration===0&&p.slideUntil===0));s.step();assert.ok(s.time>0);assert.equal(s.jump(0,'A'),true);assert.equal(s.players[0].water,99);
  }
 });
-test('three-second countdown is independent of update frequency and leaves the full ninety seconds',()=>{
- for(const dt of [1/30,1/60,1/144,.17]){const s=game();s.start('kitchen',true);advance(s,3,dt);assert.equal(s.state,'PLAYING');assert.equal(s.time,0);advance(s,90);assert.equal(s.time,90);assert.equal(s.state,'FINISHED');}
+test('three-second countdown is independent of update frequency and leaves the full sixty seconds',()=>{
+ for(const dt of [1/30,1/60,1/144,.17]){const s=game();s.start('kitchen',true);advance(s,3,dt);assert.equal(s.state,'PLAYING');assert.equal(s.time,0);advance(s,60);assert.equal(s.time,60);assert.equal(s.state,'FINISHED');}
 });
 test('two chefs chase the closest visible live fish including a CPU and remain outside ranking',()=>{
  const s=game(),c=s.chefs[0],p=s.players[2];p.p={x:c.x,y:.28,z:c.z+4};const before={x:c.x,z:c.z};s.step();assert.equal(c.target,2);advance(s,.4);assert.ok(Math.hypot(c.x-before.x,c.z-before.z)>.3);

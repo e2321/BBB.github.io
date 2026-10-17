@@ -16,7 +16,7 @@ export async function checkPages(directory='dist'){
   assert.ok(!/(?:file:\/\/|[A-Za-z]:[\\/](?:Users|Program Files)|https?:\/\/(?:localhost|127\.0\.0\.1))/.test(text),`Local-only reference in ${relative(root,path)}`);
   if(path.endsWith('.js'))assert.ok(!/\b(?:from|import)\s*["'](?:three(?:\/|["'])|https?:\/\/)/.test(text),'An external JavaScript dependency was not bundled');
  }
- const models=[];for(const name of ['madai.glb','chef.glb','squid.glb']){
+ const models=[];for(const name of ['madai.glb','chef.glb','squid.glb','starfish.glb']){
   const built=await readFile(join(root,'assets/models',name)),original=await readFile(join('public/assets/models',name));assert.equal(built.toString('ascii',0,4),'glTF',`Invalid or LFS-pointer model: ${name}`);
   assert.equal(createHash('sha256').update(built).digest('hex'),createHash('sha256').update(original).digest('hex'),`Model changed during build: ${name}`);
   const gltf=JSON.parse(built.subarray(20,20+built.readUInt32LE(12)).toString());for(const asset of [...(gltf.buffers||[]),...(gltf.images||[])])assert.ok(!asset.uri||asset.uri.startsWith('data:'),`Model refers to an external file: ${asset.uri}`);

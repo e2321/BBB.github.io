@@ -66,7 +66,7 @@ export class LiveCharacterPreview{
    }
    const t=reduce?0:now/1000;this.model.root.position.y=this.baseY+(reduce?0:Math.sin(t*1.5)*.018);
    const angle=.6+Math.sin(t*.22)*.25+this.orbitX*.35;this.orbitOffset??=new THREE.Vector3();
-   this.camera.aspect=width/height;this.distance=fitPreviewCamera(this.camera,this.bounds,this.orbitOffset.set(Math.sin(angle),.45+this.orbitY*.12,Math.cos(angle)));
+   this.camera.aspect=width/height;this.distance=fitPreviewCamera(this.camera,this.bounds,this.orbitOffset.set(Math.sin(angle),(this.model.previewElevation||.45)+this.orbitY*.12,Math.cos(angle)));
    this.model.rainbow?.(color==='rainbow'?.5:0,t,false);const target=renderer.getRenderTarget(),alpha=renderer.getClearAlpha(),clear=renderer.getClearColor(new THREE.Color()).clone();try{renderer.setRenderTarget(null);renderer.setClearColor('#081d36',0);renderer.clear();renderer.render(this.scene,this.camera);const ctx=this.canvas.getContext('2d');ctx.clearRect(0,0,this.canvas.width,this.canvas.height);ctx.drawImage(renderer.domElement,0,0,this.canvas.width,this.canvas.height);if(ctx.save){ctx.save();ctx.scale(this.canvas.width/256,this.canvas.height/256);previewEffect(ctx,effect,t);ctx.restore();}if(copyCanvas){const ctx2=copyCanvas.getContext('2d');ctx2.clearRect(0,0,256,256);const ratio=this.bufferWidth/this.bufferHeight,w=ratio>=1?256:256*ratio,h=ratio>=1?256/ratio:256;ctx2.drawImage(renderer.domElement,(256-w)/2,(256-h)/2,w,h);previewEffect(ctx2,effect,t);}this.canvas.hidden=false;}finally{renderer.setRenderTarget(target);renderer.setClearColor(clear,alpha);}
   }catch(error){this.canvas.hidden=true;this.model?.dispose();this.model=null;this.key='';this.retryAfter=now+5000;console.warn('[BBB home preview]',error);}
  }
